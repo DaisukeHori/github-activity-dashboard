@@ -56,18 +56,18 @@
   <h1>GitHub活動ダッシュボード</h1>
   <span class="period">2026/04/28 〜 05/12（15日間）</span>
   <span class="auto">⚡ 3時間ごと自動更新</span>
-  <span class="updated">最終更新: 2026/05/12 03:49 JST</span>
+  <span class="updated">最終更新: 2026/05/12 06:35 JST</span>
 </div>
 <div class="metrics">
   <div class="metric">
     <div class="label">Commits</div>
-    <div class="value">938</div>
-    <div class="sub">日平均 62.5 / 9リポジトリ</div>
+    <div class="value">940</div>
+    <div class="sub">日平均 62.7 / 9リポジトリ</div>
   </div>
   <div class="metric">
     <div class="label">Pull Requests</div>
-    <div class="value">775</div>
-    <div class="sub">日平均 51.7</div>
+    <div class="value">777</div>
+    <div class="sub">日平均 51.8</div>
   </div>
   <div class="metric">
     <div class="label">Issues</div>
@@ -76,8 +76,8 @@
   </div>
   <div class="metric">
     <div class="label">Net Lines</div>
-    <div class="value">+665,438</div>
-    <div class="sub">追加 723,920 / 削除 58,482</div>
+    <div class="value">+673,465</div>
+    <div class="sub">追加 732,063 / 削除 58,598</div>
   </div>
 </div>
 <div class="charts-grid">
@@ -117,11 +117,11 @@
 Chart.defaults.font.family = "'Noto Sans JP', sans-serif";
 Chart.defaults.color = '#6c6a78';
 const L = ["4/28", "4/29", "4/30", "5/1", "5/2", "5/3", "5/4", "5/5", "5/6", "5/7", "5/8", "5/9", "5/10", "5/11", "5/12"];
-const cm = [8, 52, 153, 150, 64, 44, 118, 145, 18, 4, 117, 9, 15, 41, 0];
-const pr = [3, 2, 108, 158, 76, 43, 101, 91, 18, 4, 126, 9, 18, 18, 0];
+const cm = [8, 52, 153, 150, 64, 44, 118, 145, 18, 4, 117, 9, 15, 43, 0];
+const pr = [3, 2, 108, 158, 76, 43, 101, 91, 18, 4, 126, 9, 18, 20, 0];
 const is_ = [0, 73, 188, 114, 15, 0, 0, 0, 0, 0, 16, 0, 0, 0, 0];
-const ad = [2436, 17031, 126890, 84473, 25236, 49012, 117448, 122938, 4744, 44454, 71644, 1630, 11945, 44039, 0];
-const dl = [269, 978, 9930, 6921, 5275, 5581, 5422, 7736, 416, 7054, 5612, 256, 682, 2350, 0];
+const ad = [2436, 17031, 126890, 84473, 25236, 49012, 117448, 122938, 4744, 44454, 71644, 1630, 11945, 52182, 0];
+const dl = [269, 978, 9930, 6921, 5275, 5581, 5422, 7736, 416, 7054, 5612, 256, 682, 2466, 0];
 const nt = ad.map((a,i) => a - dl[i]);
 const cu = []; nt.reduce((a,v,i) => { cu[i]=a+v; return cu[i]; }, 0);
 const g = 'rgba(255,255,255,0.04)', t = '#6c6a78';
@@ -163,7 +163,7 @@ new Chart(document.getElementById('c2'), {
 
 new Chart(document.getElementById('c3'), {
   type:'bar',
-  data:{ labels:["homegohan-app", "HairSnap", "trancall", "hubspot-ma-mcp", "msgraph-mcp-server2", "msgraph-mcp-server", "github-activity-dashboard", "iroca-color-simulator", "pywinauto-mcp"], datasets:[{ data:[611, 264, 39, 13, 3, 3, 2, 2, 1], backgroundColor:["#8b7cf7", "#34d399", "#fbbf24", "#f97066", "#60a5fa", "#c084fc", "#fb923c", "#9b99a5", "#9b99a5"], borderRadius:4, barPercentage:.6 }] },
+  data:{ labels:["homegohan-app", "HairSnap", "trancall", "hubspot-ma-mcp", "msgraph-mcp-server2", "msgraph-mcp-server", "github-activity-dashboard", "iroca-color-simulator", "pywinauto-mcp"], datasets:[{ data:[611, 264, 41, 13, 3, 3, 2, 2, 1], backgroundColor:["#8b7cf7", "#34d399", "#fbbf24", "#f97066", "#60a5fa", "#c084fc", "#fb923c", "#9b99a5", "#9b99a5"], borderRadius:4, barPercentage:.6 }] },
   options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
     plugins:{ legend:{display:false}, tooltip:{...tt, callbacks:{label:ctx=>ctx.raw.toLocaleString()+' commits'}} },
     scales:{ x:{grid:{color:g}, ticks:{color:t, font:{size:11}}, beginAtZero:true}, y:{grid:{display:false}, ticks:{color:'#9b99a5', font:{size:11}}} }
