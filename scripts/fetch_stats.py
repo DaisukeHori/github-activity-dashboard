@@ -153,6 +153,41 @@ def prune_db(db, cutoff_iso):
         print(f"  Pruned {len(to_remove)} old entries (before: {before}, after: {len(db)})")
 
 
+
+def fetch_repo_loc(repos):
+    """Estimate lines of code per repo via GitHub languages API (bytes -> LOC)."""
+    repo_loc = {}
+    for repo_obj in repos:
+        repo = repo_obj["full_name"]
+        short = repo.split("/")[-1]
+        r = api_get(f"https://api.github.com/repos/{repo}/languages")
+        if r.status_code == 200:
+            langs = r.json()
+            total_bytes = sum(langs.values())
+            # ~35 bytes per line is a reasonable cross-language average
+            repo_loc[short] = round(total_bytes / 35)
+        else:
+            repo_loc[short] = 0
+    return repo_loc
+
+
+def fetch_open_counts():
+    """Fetch total open PRs and Issues across all user repos."""
+    open_prs = 0
+    r = api_get("https://api.github.com/search/issues",
+                {"q": f"author:{USERNAME} type:pr state:open", "per_page": 1})
+    if r.status_code == 200:
+        open_prs = r.json().get("total_count", 0)
+
+    open_issues = 0
+    r = api_get("https://api.github.com/search/issues",
+                {"q": f"author:{USERNAME} type:issue state:open", "per_page": 1})
+    if r.status_code == 200:
+        open_issues = r.json().get("total_count", 0)
+
+    return open_prs, open_issues
+
+
 def main():
     now = datetime.now(timezone.utc)
     since_dt = now - timedelta(days=LOOKBACK_DAYS)
@@ -166,35 +201,48 @@ def main():
     print(f"Fetch time: {now.strftime('%Y-%m-%dT%H:%M:%SZ')}")
 
     # Load DB
-    print("\n[1/6] Loading commits DB...")
+    print("\n[1/8] Loading commits DB...")
     db = load_db()
     print(f"  Existing entries: {len(db)}")
 
     # Prune old entries
-    print("\n[2/6] Pruning old entries...")
+    print("\n[2/8] Pruning old entries...")
     prune_db(db, prune_cutoff)
 
     # Fetch repos
-    print("\n[3/6] Fetching repos...")
+    print("\n[3/8] Fetching repos...")
     repos = fetch_repos(since_iso)
     print(f"  Active repos: {len(repos)}")
 
     # Fetch commits (incremental)
-    print("\n[4/6] Fetching commits (incremental)...")
+    print("\n[4/8] Fetching commits (incremental)...")
     new_count = fetch_commits_and_update_db(repos, since_iso, db)
 
     # Save updated DB
     save_db(db)
 
     # Fetch PRs (cheap, always re-fetch)
-    print("\n[5/6] Fetching PRs...")
+    print("\n[5/8] Fetching PRs...")
     pr_timestamps = fetch_search_timestamps("pr", since_date)
     print(f"  Total PRs: {len(pr_timestamps)}")
 
     # Fetch Issues (cheap, always re-fetch)
-    print("\n[6/6] Fetching Issues...")
+    print("\n[6/8] Fetching Issues...")
     issue_timestamps = fetch_search_timestamps("issue", since_date)
     print(f"  Total Issues: {len(issue_timestamps)}")
+
+    # Fetch repo LOC
+    print("\n[7/8] Fetching repo LOC (languages API)...")
+    repo_loc = fetch_repo_loc(repos)
+    total_loc = sum(repo_loc.values())
+    print(f"  Total estimated LOC: {total_loc:,}")
+    for name, loc in sorted(repo_loc.items(), key=lambda x: -x[1])[:5]:
+        print(f"    {name}: {loc:,}")
+
+    # Fetch open PR/Issue counts
+    print("\n[8/8] Fetching open PR/Issue counts...")
+    open_prs, open_issues = fetch_open_counts()
+    print(f"  Open PRs: {open_prs}, Open Issues: {open_issues}")
 
     # Build data.json from DB (only entries within lookback window)
     commits_in_window = []
@@ -218,6 +266,10 @@ def main():
         "commits": commits_in_window,
         "prs": pr_timestamps,
         "issues": issue_timestamps,
+        "repo_loc": repo_loc,
+        "total_loc": total_loc,
+        "open_prs": open_prs,
+        "open_issues": open_issues,
     }
 
     with open(DATA_PATH, "w") as f:

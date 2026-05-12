@@ -35,6 +35,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .hero-stat:nth-child(2) .num{background:linear-gradient(135deg,var(--green),var(--cyan));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .hero-stat:nth-child(3) .num{background:linear-gradient(135deg,var(--amber),var(--coral));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .hero-stat:nth-child(4) .num{background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero-stat .pct{font-size:10px;color:var(--cyan);margin-top:4px;font-weight:400;opacity:.9}
+.hero-sub-stats{display:flex;gap:24px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);flex-wrap:wrap}
 .bench-note{font-size:10px;color:var(--text3);margin-top:16px;text-align:right;opacity:.7}
 .bench-note a{text-decoration:none}
 .hero-stat .equiv{font-size:11px;color:var(--amber);margin-top:4px;font-weight:400;opacity:.85}
@@ -96,6 +98,8 @@ Chart.defaults.font.family="'Noto Sans JP',sans-serif";
 Chart.defaults.color='#71717a';
 const G='rgba(255,255,255,0.04)',TC='#52525b';
 const TT={backgroundColor:'#27272a',titleColor:'#fafafa',bodyColor:'#a1a1aa',borderColor:'rgba(255,255,255,0.08)',borderWidth:1,padding:10,cornerRadius:8};
+function fmtLoc(n){if(n>=1000000)return (n/1000000).toFixed(1)+'M';if(n>=1000)return (n/1000).toFixed(1)+'K';return String(n)}
+function pctStr(delta,total){if(total<=0)return '—';const p=(delta/total*100);return (p>=0?'+':'')+p.toFixed(2)+'%'}
 const PALETTE=["#8b7cf7","#34d399","#fbbf24","#f97066","#60a5fa","#c084fc","#fb923c","#a78bfa","#38bdf8","#4ade80","#e879f9","#f472b6"];
 
 let RAW=null, CHARTS=[], CUR_TZ=9;
@@ -181,7 +185,13 @@ function aggregate(raw,offset){
     return cb-ca;
   });
 
-  return {dates,daily,hourlyByRepo,hourlyAdd,hourlyDel,todayReposSorted,repoCount,streak,today,tCommits,tPrs,tAdd,tDel,activeRepos,top20,peakDay,peakCount,now};
+  // Totals from server data
+  const totalLoc=raw.total_loc||0;
+  const openPrs=raw.open_prs||0;
+  const openIssues=raw.open_issues||0;
+  const repoLoc=raw.repo_loc||{};
+
+  return {dates,daily,hourlyByRepo,hourlyAdd,hourlyDel,todayReposSorted,repoCount,streak,today,tCommits,tPrs,tAdd,tDel,activeRepos,top20,peakDay,peakCount,now,totalLoc,openPrs,openIssues,repoLoc};
 }
 
 function render(raw){
@@ -255,9 +265,14 @@ function render(raw){
     </div>
     <div class="hero-grid">
       <div class="hero-stat"><div class="num">${a.tCommits}</div><div class="label">Commits</div><div class="equiv">≈ エンジニア${(a.tCommits/5).toFixed(1)}人日</div></div>
-      <div class="hero-stat"><div class="num">${a.tPrs}</div><div class="label">Pull Requests</div><div class="equiv">≈ エンジニア${(a.tPrs/1).toFixed(1)}人日</div></div>
-      <div class="hero-stat"><div class="num">+${tNet.toLocaleString()}</div><div class="label">Net Lines</div><div class="equiv">≈ エンジニア${(Math.max(tNet,0)/100).toFixed(1)}人日</div></div>
-      <div class="hero-stat"><div class="num">${a.activeRepos}</div><div class="label">Active Repos</div><div class="equiv">&nbsp;</div></div>
+      <div class="hero-stat"><div class="num">${a.tPrs}</div><div class="label">Pull Requests</div><div class="pct">${a.openPrs>0?'Open '+a.openPrs+'件中 今日+'+a.tPrs+'件':'≈ エンジニア'+(a.tPrs/1).toFixed(1)+'人日'}</div></div>
+      <div class="hero-stat"><div class="num">+${tNet.toLocaleString()}</div><div class="label">Net Lines</div><div class="pct">${a.totalLoc>0?fmtLoc(a.totalLoc)+'行中 +'+pctStr(tNet,a.totalLoc):'≈ エンジニア'+(Math.max(tNet,0)/100).toFixed(1)+'人日'}</div></div>
+      <div class="hero-stat"><div class="num">${a.activeRepos}</div><div class="label">Active Repos</div><div class="pct">${a.openIssues>0?'Open Issue '+a.openIssues+'件':'&nbsp;'}</div></div>
+    </div>
+    <div class="hero-sub-stats">
+      <span>📝 合計コード: ${fmtLoc(a.totalLoc)} 行（${a.activeRepos}リポジトリ）</span>
+      <span>⚡ 今日の増分: ${a.totalLoc>0?pctStr(tNet,a.totalLoc):'—'}</span>
+      <span>≈ エンジニア${(a.tCommits/5).toFixed(1)}人日分</span>
     </div>
     <div class="bench-note">※ 人日換算基準: コミット5回/日, PR 1件/日, コード純増100行/日 (<a href="https://blog.ndepend.com/mythical-man-month-10-lines-per-developer-day/" target="_blank" style="color:var(--purple)">NDepend研究</a>等に基づく一般的エンジニアの1日平均)</div>
   </div>
