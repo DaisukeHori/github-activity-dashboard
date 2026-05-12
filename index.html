@@ -12,8 +12,6 @@
 :root{--bg:#09090b;--surface:#18181b;--surface2:#27272a;--border:rgba(255,255,255,0.06);--text:#fafafa;--text2:#a1a1aa;--text3:#71717a;--purple:#8b7cf7;--green:#22c55e;--coral:#ef4444;--blue:#3b82f6;--amber:#f59e0b;--cyan:#06b6d4;--radius:16px;--radius-sm:10px}
 body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 .container{max-width:1200px;margin:0 auto;padding:2rem}
-
-/* TZ Picker */
 .tz-bar{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap}
 .tz-bar label{font-size:12px;color:var(--text3);letter-spacing:1px;text-transform:uppercase}
 .tz-btn{background:var(--surface);border:1px solid var(--border);color:var(--text2);font-size:12px;padding:6px 14px;border-radius:20px;cursor:pointer;font-family:inherit;transition:all .15s}
@@ -22,8 +20,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .tz-custom{background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:12px;padding:5px 10px;border-radius:10px;font-family:'JetBrains Mono',monospace;width:70px;text-align:center}
 .tz-custom:focus{outline:none;border-color:var(--purple)}
 .tz-display{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);margin-left:auto}
-
-/* Hero */
 .hero{background:linear-gradient(135deg,rgba(139,124,247,0.08),rgba(34,197,94,0.06));border:1px solid var(--border);border-radius:20px;padding:2.5rem;margin-bottom:1.5rem;position:relative;overflow:hidden}
 .hero::before{content:'';position:absolute;top:-50%;right:-20%;width:400px;height:400px;background:radial-gradient(circle,rgba(139,124,247,0.08),transparent 70%);pointer-events:none}
 .hero-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:12px}
@@ -45,44 +41,38 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .hero-stat:nth-child(2) .num{animation-delay:.1s}
 .hero-stat:nth-child(3) .num{animation-delay:.2s}
 .hero-stat:nth-child(4) .num{animation-delay:.3s}
-
-/* Cards */
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
-.grid-3{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px}
+.grid-today{display:grid;grid-template-columns:3fr 1fr;gap:14px;margin-bottom:14px}
 .card{background:var(--surface);border-radius:var(--radius);padding:1.5rem;border:1px solid var(--border)}
 .card h2{font-size:14px;font-weight:500;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .card h2 .icon{font-size:16px}
 .chart-wrap{position:relative;width:100%}
-.h180{height:180px}.h220{height:220px}
+.h180{height:180px}.h220{height:220px}.h160{height:160px}
 .summary-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
 .summary-item{background:var(--surface);border-radius:var(--radius-sm);padding:1rem;border:1px solid var(--border);text-align:center}
 .summary-item .val{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:600}
 .summary-item .lbl{font-size:11px;color:var(--text3);margin-top:2px}
 .c-purple{color:var(--purple)}.c-green{color:var(--green)}.c-coral{color:var(--coral)}.c-blue{color:var(--blue)}
-
-/* Commit log */
-.commit-list{max-height:320px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--surface2) transparent}
+.commit-list{max-height:380px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--surface2) transparent}
 .commit-item{display:grid;grid-template-columns:80px 100px 1fr 50px;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);align-items:center;font-size:12px}
 .commit-item:last-child{border-bottom:none}
 .commit-time{color:var(--text3);font-family:'JetBrains Mono',monospace;font-size:11px}
 .commit-repo{color:var(--purple);font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .commit-msg{color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .commit-sha{color:var(--text3);font-family:'JetBrains Mono',monospace;font-size:10px;text-align:right}
-
-.legend{display:flex;gap:16px;margin-bottom:10px;font-size:11px;color:var(--text3);flex-wrap:wrap}
+.legend{display:flex;gap:14px;margin-bottom:10px;font-size:11px;color:var(--text3);flex-wrap:wrap}
 .legend span{display:flex;align-items:center;gap:4px}
 .dot{width:8px;height:8px;border-radius:2px;display:inline-block}
 .line-dot{width:12px;height:2px;border-radius:1px;display:inline-block}
 .footer{text-align:center;padding:2rem 0 1rem;font-size:11px;color:var(--text3)}
 .footer a{color:var(--purple);text-decoration:none}
 .loading{text-align:center;padding:4rem;color:var(--text3);font-size:14px}
-
-@media(max-width:768px){.container{padding:1rem}.hero-grid{grid-template-columns:repeat(2,1fr);gap:12px}.hero-stat .num{font-size:36px}.grid-2,.grid-3,.summary-bar{grid-template-columns:1fr}.commit-item{grid-template-columns:70px 80px 1fr 40px}}
+.sub-title{font-size:12px;color:var(--text3);margin-top:16px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+@media(max-width:768px){.container{padding:1rem}.hero-grid{grid-template-columns:repeat(2,1fr);gap:12px}.hero-stat .num{font-size:36px}.grid-2,.grid-today,.summary-bar{grid-template-columns:1fr}.commit-item{grid-template-columns:70px 80px 1fr 40px}}
 </style>
 </head>
 <body>
 <div class="container">
-  <!-- Timezone picker -->
   <div class="tz-bar">
     <label>🌐 Timezone:</label>
     <button class="tz-btn" data-tz="9" onclick="setTZ(9)">JST (UTC+9)</button>
@@ -95,7 +85,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <input type="number" class="tz-custom" id="tzCustom" min="-12" max="14" step="1" placeholder="±hrs" onchange="setTZ(Number(this.value))">
     <span class="tz-display" id="tzDisplay"></span>
   </div>
-
   <div id="dashboard"><div class="loading">⏳ Loading data...</div></div>
 </div>
 
@@ -104,66 +93,50 @@ Chart.defaults.font.family="'Noto Sans JP',sans-serif";
 Chart.defaults.color='#71717a';
 const G='rgba(255,255,255,0.04)',TC='#52525b';
 const TT={backgroundColor:'#27272a',titleColor:'#fafafa',bodyColor:'#a1a1aa',borderColor:'rgba(255,255,255,0.08)',borderWidth:1,padding:10,cornerRadius:8};
+const PALETTE=["#8b7cf7","#34d399","#fbbf24","#f97066","#60a5fa","#c084fc","#fb923c","#a78bfa","#38bdf8","#4ade80","#e879f9","#f472b6"];
 
 let RAW=null, CHARTS=[], CUR_TZ=9;
-
-// Load saved TZ
 const saved=localStorage.getItem('dashboard_tz');
 if(saved!==null) CUR_TZ=Number(saved);
 
-// Highlight active button
 function highlightTZ(){
-  document.querySelectorAll('.tz-btn').forEach(b=>{
-    b.classList.toggle('active', Number(b.dataset.tz)===CUR_TZ);
-  });
+  document.querySelectorAll('.tz-btn').forEach(b=>{b.classList.toggle('active',Number(b.dataset.tz)===CUR_TZ)});
   const sign=CUR_TZ>=0?'+':'';
   document.getElementById('tzDisplay').textContent=`UTC${sign}${CUR_TZ} — ${new Date().toLocaleString('ja-JP',{timeZone:tzName(CUR_TZ),hour:'2-digit',minute:'2-digit'})} now`;
   document.getElementById('tzCustom').value=CUR_TZ;
 }
-
 function tzName(offset){
-  // Approximate IANA name for display
   const map={9:'Asia/Tokyo',0:'UTC','-5':'America/New_York','-8':'America/Los_Angeles',8:'Asia/Shanghai',1:'Europe/Berlin'};
   return map[String(offset)]||'UTC';
 }
-
-function setTZ(offset){
-  CUR_TZ=offset;
-  localStorage.setItem('dashboard_tz',String(offset));
-  highlightTZ();
-  if(RAW) render(RAW);
-}
-
-// Convert UTC ISO string to Date shifted by offset
-function toLocal(utcStr, offset){
-  const d=new Date(utcStr);
-  return new Date(d.getTime()+offset*3600000);
-}
-function dateStr(d){ return d.getFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0'); }
-function shortDate(d){ return (d.getUTCMonth()+1)+'/'+d.getUTCDate(); }
-function timeStr(d){ return String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0'); }
-
+function setTZ(offset){CUR_TZ=offset;localStorage.setItem('dashboard_tz',String(offset));highlightTZ();if(RAW)render(RAW)}
+function toLocal(utcStr,offset){const d=new Date(utcStr);return new Date(d.getTime()+offset*3600000)}
+function dateStr(d){return d.getFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0')}
+function shortDate(d){return(d.getUTCMonth()+1)+'/'+d.getUTCDate()}
+function timeStr(d){return String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0')}
 const WD=['日','月','火','水','木','金','土'];
 
-function aggregate(raw, offset){
-  const now=toLocal(new Date().toISOString(), offset);
+function aggregate(raw,offset){
+  const now=toLocal(new Date().toISOString(),offset);
   const today=dateStr(now);
-  const sinceLocal=toLocal(raw.since_utc, offset);
-
-  // Build date range
+  const sinceLocal=toLocal(raw.since_utc,offset);
   const dates=[];
   let d=new Date(Date.UTC(sinceLocal.getUTCFullYear(),sinceLocal.getUTCMonth(),sinceLocal.getUTCDate()));
   const endD=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()));
-  while(d<=endD){ dates.push(dateStr(d)); d=new Date(d.getTime()+86400000); }
+  while(d<=endD){dates.push(dateStr(d));d=new Date(d.getTime()+86400000)}
 
   const daily={commits:{},prs:{},issues:{},add:{},del:{}};
-  const hourly={};
   const repoCount={};
   const recentCommits=[];
 
-  // Commits
+  // Hourly by repo + hourly lines (today only)
+  const hourlyByRepo={};  // repo -> {h: count}
+  const hourlyAdd={};     // h -> total additions
+  const hourlyDel={};     // h -> total deletions
+  const todayRepos=new Set();
+
   for(const c of raw.commits){
-    const loc=toLocal(c.utc, offset);
+    const loc=toLocal(c.utc,offset);
     const ds=dateStr(loc);
     daily.commits[ds]=(daily.commits[ds]||0)+1;
     daily.add[ds]=(daily.add[ds]||0)+c.add;
@@ -171,50 +144,41 @@ function aggregate(raw, offset){
     repoCount[c.repo]=(repoCount[c.repo]||0)+1;
     if(ds===today){
       const h=loc.getUTCHours();
-      hourly[h]=(hourly[h]||0)+1;
+      todayRepos.add(c.repo);
+      if(!hourlyByRepo[c.repo])hourlyByRepo[c.repo]={};
+      hourlyByRepo[c.repo][h]=(hourlyByRepo[c.repo][h]||0)+1;
+      hourlyAdd[h]=(hourlyAdd[h]||0)+c.add;
+      hourlyDel[h]=(hourlyDel[h]||0)+c.del;
     }
-    recentCommits.push({repo:c.repo,msg:c.msg,sha:c.sha,localDate:shortDate(loc),localTime:timeStr(loc),sortKey:c.utc});
+    recentCommits.push({repo:c.repo,msg:c.msg,sha:c.sha,add:c.add,del:c.del,localDate:shortDate(loc),localTime:timeStr(loc),sortKey:c.utc});
   }
 
-  // PRs
-  for(const utc of raw.prs){
-    const loc=toLocal(utc, offset);
-    const ds=dateStr(loc);
-    daily.prs[ds]=(daily.prs[ds]||0)+1;
-  }
+  for(const utc of raw.prs){const loc=toLocal(utc,offset);const ds=dateStr(loc);daily.prs[ds]=(daily.prs[ds]||0)+1}
+  for(const utc of raw.issues){const loc=toLocal(utc,offset);const ds=dateStr(loc);daily.issues[ds]=(daily.issues[ds]||0)+1}
 
-  // Issues
-  for(const utc of raw.issues){
-    const loc=toLocal(utc, offset);
-    const ds=dateStr(loc);
-    daily.issues[ds]=(daily.issues[ds]||0)+1;
-  }
-
-  // Streak (consecutive days with commits, from today backward)
   let streak=0;
-  for(let i=dates.length-1;i>=0;i--){
-    if((daily.commits[dates[i]]||0)>0) streak++;
-    else break;
-  }
+  for(let i=dates.length-1;i>=0;i--){if((daily.commits[dates[i]]||0)>0)streak++;else break}
 
-  // Recent commits (top 20)
   recentCommits.sort((a,b)=>b.sortKey.localeCompare(a.sortKey));
   const top20=recentCommits.slice(0,20);
 
-  // Today stats
   const tCommits=daily.commits[today]||0;
   const tPrs=daily.prs[today]||0;
   const tAdd=daily.add[today]||0;
   const tDel=daily.del[today]||0;
-
-  // Active repos
   const activeRepos=Object.keys(repoCount).length;
 
-  // Peak day
   let peakDay=dates[0],peakCount=0;
-  for(const d of dates){ const v=daily.commits[d]||0; if(v>peakCount){peakCount=v;peakDay=d;} }
+  for(const d of dates){const v=daily.commits[d]||0;if(v>peakCount){peakCount=v;peakDay=d}}
 
-  return {dates,daily,hourly,repoCount,streak,today,tCommits,tPrs,tAdd,tDel,activeRepos,top20,peakDay,peakCount,now};
+  // Sort today's repos by commit count
+  const todayReposSorted=[...todayRepos].sort((a,b)=>{
+    const ca=Object.values(hourlyByRepo[a]||{}).reduce((s,v)=>s+v,0);
+    const cb=Object.values(hourlyByRepo[b]||{}).reduce((s,v)=>s+v,0);
+    return cb-ca;
+  });
+
+  return {dates,daily,hourlyByRepo,hourlyAdd,hourlyDel,todayReposSorted,repoCount,streak,today,tCommits,tPrs,tAdd,tDel,activeRepos,top20,peakDay,peakCount,now};
 }
 
 function render(raw){
@@ -223,9 +187,7 @@ function render(raw){
   const sign=offset>=0?'+':'';
   const tzLabel=`UTC${sign}${offset}`;
 
-  // Destroy old charts
-  CHARTS.forEach(c=>c.destroy());
-  CHARTS=[];
+  CHARTS.forEach(c=>c.destroy());CHARTS=[];
 
   const labels=a.dates.map(d=>{const p=d.split('-');return parseInt(p[1])+'/'+parseInt(p[2])});
   const cmArr=a.dates.map(d=>a.daily.commits[d]||0);
@@ -244,12 +206,22 @@ function render(raw){
   const totalNet=totalAdd-totalDel;
 
   const sortedRepos=Object.entries(a.repoCount).sort((x,y)=>y[1]-x[1]);
-  const palette=["#8b7cf7","#34d399","#fbbf24","#f97066","#60a5fa","#c084fc","#fb923c","#a78bfa","#38bdf8","#4ade80"];
-
-  const hArr=Array.from({length:24},(_,i)=>a.hourly[i]||0);
   const hLabels=Array.from({length:24},(_,i)=>String(i).padStart(2,'0'));
 
-  // Commit log HTML
+  // Build stacked hourly datasets per repo
+  const hourlyDatasets=a.todayReposSorted.map((repo,idx)=>{
+    const data=Array.from({length:24},(_,h)=>(a.hourlyByRepo[repo]||{})[h]||0);
+    return {label:repo,data,backgroundColor:PALETTE[idx%PALETTE.length],borderRadius:idx===0?{topLeft:3,topRight:3}:0,barPercentage:.7};
+  });
+
+  // Hourly lines data
+  const hAddArr=Array.from({length:24},(_,h)=>a.hourlyAdd[h]||0);
+  const hDelArr=Array.from({length:24},(_,h)=>a.hourlyDel[h]||0);
+  const hNetArr=hAddArr.map((v,i)=>v-hDelArr[i]);
+
+  // Hourly legend HTML
+  let hLegend=a.todayReposSorted.map((repo,i)=>`<span><span class="dot" style="background:${PALETTE[i%PALETTE.length]}"></span>${esc(repo)}</span>`).join('');
+
   let logHtml='';
   for(const c of a.top20){
     logHtml+=`<div class="commit-item"><span class="commit-time">${c.localDate} ${c.localTime}</span><span class="commit-repo">${esc(c.repo)}</span><span class="commit-msg">${esc(c.msg)}</span><span class="commit-sha">${c.sha}</span></div>`;
@@ -260,12 +232,9 @@ function render(raw){
   const todayDisplay=`${nowLocal.getUTCFullYear()}/${nowLocal.getUTCMonth()+1}/${nowLocal.getUTCDate()}（${WD[nowLocal.getUTCDay()]}）`;
   const peakDisplay=parseInt(a.peakDay.split('-')[1])+'/'+parseInt(a.peakDay.split('-')[2]);
   const numDays=a.dates.length;
-  const periodStart=a.dates[0];
-  const periodEnd=a.dates[a.dates.length-1];
-  const pS=periodStart.split('-');const pE=periodEnd.split('-');
+  const pS=a.dates[0].split('-');const pE=a.dates[a.dates.length-1].split('-');
   const periodStr=`${pS[0]}/${pS[1]}/${pS[2]} 〜 ${parseInt(pE[1])}/${parseInt(pE[2])}（${numDays}日間）`;
-
-  const updLocal=toLocal(raw.updated_at_utc, offset);
+  const updLocal=toLocal(raw.updated_at_utc,offset);
   const updStr=`${updLocal.getUTCFullYear()}/${updLocal.getUTCMonth()+1}/${updLocal.getUTCDate()} ${timeStr(updLocal)} ${tzLabel}`;
 
   document.getElementById('dashboard').innerHTML=`
@@ -288,10 +257,14 @@ function render(raw){
     </div>
   </div>
 
-  <div class="grid-3">
+  <div class="grid-today">
     <div class="card">
-      <h2><span class="icon">⏰</span> 今日の時間帯別コミット <span style="font-size:11px;color:var(--text3)">${tzLabel}</span></h2>
+      <h2><span class="icon">⏰</span> 今日の時間帯別アクティビティ <span style="font-size:11px;color:var(--text3)">${tzLabel}</span></h2>
+      <div class="legend">${hLegend||'<span style="color:var(--text3)">No commits today</span>'}</div>
       <div class="chart-wrap h180"><canvas id="hourly"></canvas></div>
+      <div class="sub-title">💻 時間帯別コード増減</div>
+      <div class="legend"><span><span class="dot" style="background:rgba(34,197,94,0.6)"></span>追加</span><span><span class="dot" style="background:rgba(239,68,68,0.6)"></span>削除</span><span><span class="line-dot" style="background:#8b7cf7"></span>純増</span></div>
+      <div class="chart-wrap h160"><canvas id="hourlyLines"></canvas></div>
     </div>
     <div class="card">
       <h2><span class="icon">📋</span> 直近コミットログ</h2>
@@ -335,28 +308,63 @@ function render(raw){
   <div class="footer">最終更新: ${updStr}　|　Powered by <a href="https://github.com/DaisukeHori/github-activity-dashboard">GitHub Actions</a></div>
   `;
 
-  // --- Charts ---
-  CHARTS.push(new Chart(document.getElementById('hourly'),{type:'bar',data:{labels:hLabels,datasets:[{data:hArr,backgroundColor:function(ctx){const v=ctx.raw;const m=Math.max(...hArr,1);return v===m&&v>0?'#8b7cf7':v>0?'rgba(139,124,247,0.4)':'rgba(139,124,247,0.08)'},borderRadius:4,barPercentage:.7}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>c.raw+' commits'}}},scales:{x:{grid:{display:false},ticks:{color:TC,font:{size:9}}},y:{display:false,beginAtZero:true}}}}));
+  // === CHARTS ===
 
+  // Hourly stacked bar by repo
+  CHARTS.push(new Chart(document.getElementById('hourly'),{
+    type:'bar',
+    data:{labels:hLabels,datasets:hourlyDatasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,...TT,
+        callbacks:{label:c=>c.raw>0?c.dataset.label+': '+c.raw+' commits':null,
+          footer:items=>{const t=items.reduce((s,i)=>s+i.raw,0);return t>0?'合計: '+t+' commits':''}
+        }
+      }},
+      scales:{x:{grid:{display:false},ticks:{color:TC,font:{size:9}},stacked:true},
+              y:{display:false,beginAtZero:true,stacked:true}}
+    }
+  }));
+
+  // Hourly lines chart
+  CHARTS.push(new Chart(document.getElementById('hourlyLines'),{
+    type:'bar',
+    data:{labels:hLabels,datasets:[
+      {label:'追加',data:hAddArr,backgroundColor:'rgba(34,197,94,0.5)',borderRadius:3,barPercentage:.5,categoryPercentage:.85,yAxisID:'y'},
+      {label:'削除',data:hDelArr.map(v=>-v),backgroundColor:'rgba(239,68,68,0.5)',borderRadius:3,barPercentage:.5,categoryPercentage:.85,yAxisID:'y'},
+      {label:'純増',data:hNetArr,type:'line',borderColor:'#8b7cf7',borderWidth:1.5,pointRadius:0,fill:false,yAxisID:'y2',tension:.4}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,...TT,
+        callbacks:{label:c=>{const v=c.raw;if(v===0)return null;return c.dataset.label+': '+(v<0?'':v>0&&c.dataset.label==='追加'?'+':'')+v.toLocaleString()+' 行'}}
+      }},
+      scales:{
+        x:{grid:{display:false},ticks:{color:TC,font:{size:9}},stacked:true},
+        y:{display:false,stacked:true},
+        y2:{display:false,beginAtZero:true}
+      }
+    }
+  }));
+
+  // Daily activity
   CHARTS.push(new Chart(document.getElementById('c1'),{type:'bar',data:{labels,datasets:[{label:'コミット',data:cmArr,backgroundColor:'#8b7cf7',borderRadius:4,barPercentage:.6,categoryPercentage:.8},{label:'PR',data:prArr,backgroundColor:'#34d399',borderRadius:4,barPercentage:.6,categoryPercentage:.8},{label:'Issue',data:isArr,backgroundColor:'#ef4444',borderRadius:4,barPercentage:.6,categoryPercentage:.8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,...TT}},scales:{x:{grid:{display:false},ticks:{color:TC,font:{size:10},autoSkip:false}},y:{grid:{color:G},ticks:{color:TC,font:{size:10}},beginAtZero:true}}}}));
 
+  // Daily code
   CHARTS.push(new Chart(document.getElementById('c2'),{type:'bar',data:{labels,datasets:[{label:'追加',data:adArr,backgroundColor:'rgba(34,197,94,0.6)',borderRadius:4,barPercentage:.5,categoryPercentage:.85,yAxisID:'y'},{label:'削除',data:dlArr.map(d=>-d),backgroundColor:'rgba(239,68,68,0.6)',borderRadius:4,barPercentage:.5,categoryPercentage:.85,yAxisID:'y'},{label:'純増',data:ntArr,type:'line',borderColor:'#8b7cf7',borderWidth:2,pointRadius:2.5,pointBackgroundColor:'#8b7cf7',fill:false,yAxisID:'y2',tension:.35}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,...TT,callbacks:{label:c=>{const v=c.raw;return c.dataset.label+': '+(v<0?'-':'+')+Math.abs(v).toLocaleString()+' 行'}}}},scales:{x:{grid:{display:false},ticks:{color:TC,font:{size:10},autoSkip:false},stacked:true},y:{grid:{color:G},ticks:{color:TC,font:{size:10},callback:v=>(v<0?'-':'')+(Math.abs(v)/1000).toFixed(0)+'k'},stacked:true,position:'left'},y2:{grid:{display:false},ticks:{color:'#8b7cf7',font:{size:10},callback:v=>(v/1000).toFixed(0)+'k'},position:'right',beginAtZero:true}}}}));
 
-  const rn=sortedRepos.map(r=>r[0]);
-  const rc=sortedRepos.map(r=>r[1]);
-  const rColors=rn.map((_,i)=>palette[i%palette.length]);
+  // Repo chart
+  const rn=sortedRepos.map(r=>r[0]),rc=sortedRepos.map(r=>r[1]),rColors=rn.map((_,i)=>PALETTE[i%PALETTE.length]);
   CHARTS.push(new Chart(document.getElementById('c3'),{type:'bar',data:{labels:rn,datasets:[{data:rc,backgroundColor:rColors,borderRadius:4,barPercentage:.55}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>c.raw.toLocaleString()+' commits'}}},scales:{x:{grid:{color:G},ticks:{color:TC,font:{size:10}},beginAtZero:true},y:{grid:{display:false},ticks:{color:'#a1a1aa',font:{size:10}}}}}}));
 
+  // Cumulative
   CHARTS.push(new Chart(document.getElementById('c4'),{type:'line',data:{labels,datasets:[{label:'累積純増',data:cumArr,borderColor:'#3b82f6',borderWidth:2.5,pointRadius:2.5,pointBackgroundColor:'#3b82f6',fill:true,backgroundColor:function(ctx){const c=ctx.chart.ctx;const gr=c.createLinearGradient(0,0,0,ctx.chart.height);gr.addColorStop(0,'rgba(59,130,246,0.15)');gr.addColorStop(1,'rgba(59,130,246,0)');return gr},tension:.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>'+'+c.raw.toLocaleString()+' 行'}}},scales:{x:{grid:{display:false},ticks:{color:TC,font:{size:10},autoSkip:false}},y:{grid:{color:G},ticks:{color:TC,font:{size:10},callback:v=>(v/1000).toFixed(0)+'k'},beginAtZero:true}}}}));
 }
 
-function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 
-// Load data
 fetch('data.json?t='+Date.now())
   .then(r=>r.json())
-  .then(data=>{RAW=data;highlightTZ();render(data);})
-  .catch(e=>{document.getElementById('dashboard').innerHTML='<div class="loading">❌ Failed to load data.json</div>';console.error(e);});
+  .then(data=>{RAW=data;highlightTZ();render(data)})
+  .catch(e=>{document.getElementById('dashboard').innerHTML='<div class="loading">❌ Failed to load data.json</div>';console.error(e)});
 </script>
 </body>
 </html>
