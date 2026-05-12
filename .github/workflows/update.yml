@@ -4,11 +4,6 @@ on:
   schedule:
     - cron: '0 */3 * * *'
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/**'
-      - '.github/workflows/update.yml'
 
 permissions:
   contents: write
@@ -16,8 +11,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  group: "dashboard-update"
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -34,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
-      - name: Fetch stats and generate data.json
+      - name: Fetch stats (incremental)
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: python scripts/fetch_stats.py
@@ -43,6 +38,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data.json
+          git add data.json commits_db.json
           git diff --cached --quiet || git commit -m "📊 Update data $(TZ=Asia/Tokyo date +'%Y-%m-%d %H:%M JST')"
           git push

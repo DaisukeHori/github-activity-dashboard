@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-GitHub Activity Dashboard v3 - Timezone-agnostic raw data output
-All aggregation done client-side with selectable timezone.
+GitHub Activity Dashboard v4 - Incremental fetch with commits_db.json
+Only fetches code stats for new commits (by SHA).
+PRs/Issues are cheap (search API) so re-fetched each run.
 """
 
 import os
@@ -10,7 +11,6 @@ import json
 import time
 import requests
 from datetime import datetime, timedelta, timezone
-from collections import defaultdict
 
 TOKEN = os.environ.get("GH_PAT")
 if not TOKEN:
@@ -23,6 +23,9 @@ HEADERS = {
 }
 USERNAME = "DaisukeHori"
 LOOKBACK_DAYS = 14
+OUTPUT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_PATH = os.path.join(OUTPUT_DIR, "commits_db.json")
+DATA_PATH = os.path.join(OUTPUT_DIR, "data.json")
 
 
 def api_get(url, params=None):
@@ -34,6 +37,21 @@ def api_get(url, params=None):
         print(f"  Rate limit low ({remaining}), sleeping {wait:.0f}s...")
         time.sleep(min(wait, 65))
     return r
+
+
+def load_db():
+    """Load existing commits DB. Format: {sha: {utc, repo, msg, add, del}}"""
+    if os.path.exists(DB_PATH):
+        with open(DB_PATH, "r") as f:
+            return json.load(f)
+    return {}
+
+
+def save_db(db):
+    with open(DB_PATH, "w") as f:
+        json.dump(db, f, ensure_ascii=False, separators=(",", ":"))
+    size_kb = os.path.getsize(DB_PATH) // 1024
+    print(f"  commits_db.json: {len(db)} entries ({size_kb}KB)")
 
 
 def fetch_repos(since_iso):
@@ -52,10 +70,11 @@ def fetch_repos(since_iso):
     return [r for r in repos if r.get("pushed_at", "") >= since_iso]
 
 
-def fetch_all_commits(repos, since_iso):
-    """Fetch all commits with UTC timestamps."""
-    all_commits = []
-    sha_repo_map = {}  # sha -> (repo, date_str)
+def fetch_commits_and_update_db(repos, since_iso, db):
+    """Fetch commits, add new ones to DB, fetch code stats only for new SHAs."""
+    new_count = 0
+    skipped = 0
+    new_shas = []  # (sha, repo_full) for code stats fetch
 
     for repo_obj in repos:
         repo = repo_obj["full_name"]
@@ -68,53 +87,47 @@ def fetch_all_commits(repos, since_iso):
             if not isinstance(commits, list) or not commits:
                 break
             for c in commits:
-                utc = c["commit"]["author"]["date"]
                 sha = c["sha"]
+                if sha in db:
+                    skipped += 1
+                    continue
+                utc = c["commit"]["author"]["date"]
                 msg = c["commit"]["message"].split("\n")[0][:80]
-                all_commits.append({
+                db[sha] = {
                     "utc": utc,
                     "repo": short_name,
                     "msg": msg,
-                    "sha": sha[:7],
-                    "full_sha": sha,
-                    "full_repo": repo,
-                })
-                sha_repo_map[sha] = (repo, utc[:10])
+                    "add": 0,
+                    "del": 0,
+                }
+                new_shas.append((sha, repo))
+                new_count += 1
             page += 1
             if len(commits) < 100:
                 break
-        print(f"  Commits: {repo} done")
+        print(f"  {repo}: done")
 
-    return all_commits, sha_repo_map
+    print(f"  New commits: {new_count}, Already in DB: {skipped}")
 
+    # Fetch code stats only for new commits
+    if new_shas:
+        print(f"  Fetching code stats for {len(new_shas)} new commits...")
+        for i, (sha, repo_full) in enumerate(new_shas):
+            cr = api_get(f"https://api.github.com/repos/{repo_full}/commits/{sha}")
+            if cr.status_code == 200:
+                stats = cr.json().get("stats", {})
+                db[sha]["add"] = stats.get("additions", 0)
+                db[sha]["del"] = stats.get("deletions", 0)
+            if (i + 1) % 50 == 0:
+                print(f"    {i+1}/{len(new_shas)}")
+        print(f"    {len(new_shas)}/{len(new_shas)} done")
+    else:
+        print("  No new code stats needed ✨")
 
-def fetch_code_stats(all_commits):
-    """Fetch additions/deletions per commit and attach to commit objects."""
-    for i, c in enumerate(all_commits):
-        repo = c["full_repo"]
-        sha_full = c.get("full_sha", c["sha"])
-        if len(sha_full) < 10:
-            # short sha, skip
-            c["add"] = 0
-            c["del"] = 0
-            continue
-        cr = api_get(f"https://api.github.com/repos/{repo}/commits/{sha_full}")
-        if cr.status_code == 200:
-            stats = cr.json().get("stats", {})
-            c["add"] = stats.get("additions", 0)
-            c["del"] = stats.get("deletions", 0)
-        else:
-            c["add"] = 0
-            c["del"] = 0
-
-        if (i + 1) % 100 == 0:
-            print(f"  Code stats: {i+1}/{len(all_commits)}")
-
-    print(f"  Code stats: {len(all_commits)}/{len(all_commits)} done")
+    return new_count
 
 
 def fetch_search_timestamps(query_type, since_date):
-    """Fetch PR or Issue creation UTC timestamps."""
     timestamps = []
     page = 1
     while True:
@@ -130,67 +143,88 @@ def fetch_search_timestamps(query_type, since_date):
     return timestamps
 
 
+def prune_db(db, cutoff_iso):
+    """Remove commits older than cutoff to keep DB from growing forever."""
+    before = len(db)
+    to_remove = [sha for sha, c in db.items() if c["utc"] < cutoff_iso]
+    for sha in to_remove:
+        del db[sha]
+    if to_remove:
+        print(f"  Pruned {len(to_remove)} old entries (before: {before}, after: {len(db)})")
+
+
 def main():
     now = datetime.now(timezone.utc)
     since_dt = now - timedelta(days=LOOKBACK_DAYS)
     since_iso = since_dt.strftime("%Y-%m-%dT00:00:00Z")
     since_date = since_dt.strftime("%Y-%m-%d")
+    # Keep DB entries for 30 days (wider than display window for safety)
+    prune_cutoff = (now - timedelta(days=30)).strftime("%Y-%m-%dT00:00:00Z")
 
-    print(f"=== GitHub Activity Dashboard v3 (TZ-agnostic) ===")
-    print(f"Period since: {since_date}")
+    print(f"=== GitHub Activity Dashboard v4 (Incremental) ===")
+    print(f"Period: {since_date} ~ {now.strftime('%Y-%m-%d')}")
     print(f"Fetch time: {now.strftime('%Y-%m-%dT%H:%M:%SZ')}")
 
-    print("\n[1/5] Fetching repos...")
+    # Load DB
+    print("\n[1/6] Loading commits DB...")
+    db = load_db()
+    print(f"  Existing entries: {len(db)}")
+
+    # Prune old entries
+    print("\n[2/6] Pruning old entries...")
+    prune_db(db, prune_cutoff)
+
+    # Fetch repos
+    print("\n[3/6] Fetching repos...")
     repos = fetch_repos(since_iso)
     print(f"  Active repos: {len(repos)}")
 
-    print("\n[2/5] Fetching commits...")
-    all_commits, sha_repo_map = fetch_all_commits(repos, since_iso)
-    print(f"  Total commits: {len(all_commits)}")
+    # Fetch commits (incremental)
+    print("\n[4/6] Fetching commits (incremental)...")
+    new_count = fetch_commits_and_update_db(repos, since_iso, db)
 
-    print("\n[3/5] Fetching code stats...")
-    fetch_code_stats(all_commits)
-    total_add = sum(c["add"] for c in all_commits)
-    total_del = sum(c["del"] for c in all_commits)
-    print(f"  Total: +{total_add:,} / -{total_del:,}")
+    # Save updated DB
+    save_db(db)
 
-    print("\n[4/5] Fetching PRs...")
+    # Fetch PRs (cheap, always re-fetch)
+    print("\n[5/6] Fetching PRs...")
     pr_timestamps = fetch_search_timestamps("pr", since_date)
     print(f"  Total PRs: {len(pr_timestamps)}")
 
-    print("\n[5/5] Fetching Issues...")
+    # Fetch Issues (cheap, always re-fetch)
+    print("\n[6/6] Fetching Issues...")
     issue_timestamps = fetch_search_timestamps("issue", since_date)
     print(f"  Total Issues: {len(issue_timestamps)}")
 
-    # Clean commit objects for JSON (remove internal fields)
-    clean_commits = []
-    for c in all_commits:
-        clean_commits.append({
-            "utc": c["utc"],
-            "repo": c["repo"],
-            "msg": c["msg"],
-            "sha": c["sha"],
-            "add": c["add"],
-            "del": c["del"],
-        })
+    # Build data.json from DB (only entries within lookback window)
+    commits_in_window = []
+    for sha, c in db.items():
+        if c["utc"] >= since_iso:
+            commits_in_window.append({
+                "utc": c["utc"],
+                "repo": c["repo"],
+                "msg": c["msg"],
+                "sha": sha[:7],
+                "add": c["add"],
+                "del": c["del"],
+            })
+
+    # Sort by date desc for consistent output
+    commits_in_window.sort(key=lambda x: x["utc"], reverse=True)
 
     data = {
         "updated_at_utc": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "since_utc": since_iso,
-        "commits": clean_commits,
+        "commits": commits_in_window,
         "prs": pr_timestamps,
         "issues": issue_timestamps,
     }
 
-    output_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-    with open(os.path.join(output_dir, "data.json"), "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False)
-    print(f"\n✅ data.json ({len(json.dumps(data))//1024}KB)")
-
-    # Copy index.html template (static, all logic in JS)
-    # index.html is maintained separately
-    print("✅ Done (index.html is static, reads data.json)")
+    with open(DATA_PATH, "w") as f:
+        json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
+    data_kb = os.path.getsize(DATA_PATH) // 1024
+    print(f"\n✅ data.json: {len(commits_in_window)} commits ({data_kb}KB)")
+    print(f"✅ New API calls for code stats: {new_count} (saved ~{len(db) - new_count} calls)")
 
 
 if __name__ == "__main__":
