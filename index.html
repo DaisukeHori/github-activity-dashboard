@@ -4,184 +4,172 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GitHub活動ダッシュボード - DaisukeHori</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  :root {
-    --bg: #0f1117; --surface: #1a1d27; --border: rgba(255,255,255,0.06);
-    --text: #e8e6e3; --text2: #9b99a5; --text3: #6c6a78;
-    --purple: #8b7cf7; --green: #34d399; --coral: #f97066; --blue: #60a5fa;
-    --radius: 14px;
-  }
-  body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); padding: 2rem; min-height: 100vh; }
-  .header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 2rem; flex-wrap: wrap; }
-  .header h1 { font-size: 22px; font-weight: 500; letter-spacing: -0.5px; }
-  .header .period { font-size: 13px; color: var(--text3); background: var(--surface); padding: 4px 12px; border-radius: 20px; }
-  .header .updated { font-size: 11px; color: var(--text3); margin-left: auto; }
-  .header .auto { font-size: 10px; color: var(--green); background: rgba(52,211,153,0.1); padding: 3px 8px; border-radius: 10px; }
-  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 2rem; }
-  .metric { background: var(--surface); border-radius: var(--radius); padding: 1.25rem; border: 1px solid var(--border); position: relative; overflow: hidden; }
-  .metric::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; }
-  .metric:nth-child(1)::before { background: linear-gradient(90deg, var(--purple), transparent); }
-  .metric:nth-child(2)::before { background: linear-gradient(90deg, var(--green), transparent); }
-  .metric:nth-child(3)::before { background: linear-gradient(90deg, var(--coral), transparent); }
-  .metric:nth-child(4)::before { background: linear-gradient(90deg, var(--blue), transparent); }
-  .metric .label { font-size: 12px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-  .metric .value { font-size: 28px; font-weight: 600; letter-spacing: -1px; }
-  .metric:nth-child(1) .value { color: var(--purple); }
-  .metric:nth-child(2) .value { color: var(--green); }
-  .metric:nth-child(3) .value { color: var(--coral); }
-  .metric:nth-child(4) .value { color: var(--blue); }
-  .metric .sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
-  .charts-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
-  .chart-card { background: var(--surface); border-radius: var(--radius); padding: 1.5rem; border: 1px solid var(--border); }
-  .chart-card h2 { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
-  .legend { display: flex; gap: 18px; margin-bottom: 14px; font-size: 12px; color: var(--text2); flex-wrap: wrap; }
-  .legend span { display: flex; align-items: center; gap: 5px; }
-  .legend .dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
-  .legend .line-dot { width: 14px; height: 2px; border-radius: 1px; display: inline-block; }
-  .chart-wrap { position: relative; width: 100%; }
-  .chart-wrap.h280 { height: 280px; }
-  .chart-wrap.h260 { height: 260px; }
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .footer { margin-top: 2rem; text-align: center; font-size: 11px; color: var(--text3); }
-  .footer a { color: var(--purple); text-decoration: none; }
-  @media (max-width: 768px) { body { padding: 1rem; } .metrics { grid-template-columns: repeat(2, 1fr); } .two-col { grid-template-columns: 1fr; } }
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#09090b;--surface:#18181b;--surface2:#27272a;--border:rgba(255,255,255,0.06);--text:#fafafa;--text2:#a1a1aa;--text3:#71717a;--purple:#8b7cf7;--green:#22c55e;--coral:#ef4444;--blue:#3b82f6;--amber:#f59e0b;--cyan:#06b6d4;--radius:16px;--radius-sm:10px}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.container{max-width:1200px;margin:0 auto;padding:2rem}
+.hero{background:linear-gradient(135deg,rgba(139,124,247,0.08),rgba(34,197,94,0.06));border:1px solid var(--border);border-radius:20px;padding:2.5rem;margin-bottom:1.5rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;right:-20%;width:400px;height:400px;background:radial-gradient(circle,rgba(139,124,247,0.08),transparent 70%);pointer-events:none}
+.hero-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:12px}
+.hero-label{font-size:13px;color:var(--text3);letter-spacing:2px;text-transform:uppercase}
+.hero-date{font-size:15px;font-weight:500;color:var(--text2)}
+.hero-badge{display:flex;align-items:center;gap:8px}
+.badge{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:500}
+.badge-auto{background:rgba(34,197,94,0.15);color:var(--green)}
+.badge-streak{background:rgba(245,158,11,0.15);color:var(--amber)}
+.hero-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.hero-stat{text-align:center}
+.hero-stat .num{font-family:'JetBrains Mono',monospace;font-size:48px;font-weight:700;line-height:1;margin-bottom:4px;background:linear-gradient(135deg,var(--purple),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-stat:nth-child(2) .num{background:linear-gradient(135deg,var(--green),var(--cyan));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero-stat:nth-child(3) .num{background:linear-gradient(135deg,var(--amber),var(--coral));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero-stat:nth-child(4) .num{background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero-stat .label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.grid-3{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px}
+.card{background:var(--surface);border-radius:var(--radius);padding:1.5rem;border:1px solid var(--border)}
+.card h2{font-size:14px;font-weight:500;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h2 .icon{font-size:16px}
+.chart-wrap{position:relative;width:100%}
+.h180{height:180px}.h220{height:220px}.h260{height:260px}
+.summary-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
+.summary-item{background:var(--surface);border-radius:var(--radius-sm);padding:1rem;border:1px solid var(--border);text-align:center}
+.summary-item .val{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:600}
+.summary-item .lbl{font-size:11px;color:var(--text3);margin-top:2px}
+.c-purple{color:var(--purple)}.c-green{color:var(--green)}.c-coral{color:var(--coral)}.c-blue{color:var(--blue)}
+.commit-list{max-height:320px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--surface2) transparent}
+.commit-item{display:grid;grid-template-columns:80px 100px 1fr 50px;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);align-items:center;font-size:12px}
+.commit-item:last-child{border-bottom:none}
+.commit-time{color:var(--text3);font-family:'JetBrains Mono',monospace;font-size:11px}
+.commit-repo{color:var(--purple);font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.commit-msg{color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.commit-sha{color:var(--text3);font-family:'JetBrains Mono',monospace;font-size:10px;text-align:right}
+.legend{display:flex;gap:16px;margin-bottom:10px;font-size:11px;color:var(--text3);flex-wrap:wrap}
+.legend span{display:flex;align-items:center;gap:4px}
+.dot{width:8px;height:8px;border-radius:2px;display:inline-block}
+.line-dot{width:12px;height:2px;border-radius:1px;display:inline-block}
+.footer{text-align:center;padding:2rem 0 1rem;font-size:11px;color:var(--text3)}
+.footer a{color:var(--purple);text-decoration:none}
+.num{animation:fadeUp .6s ease-out both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.hero-stat:nth-child(2) .num{animation-delay:.1s}
+.hero-stat:nth-child(3) .num{animation-delay:.2s}
+.hero-stat:nth-child(4) .num{animation-delay:.3s}
+@media(max-width:768px){.container{padding:1rem}.hero-grid{grid-template-columns:repeat(2,1fr);gap:12px}.hero-stat .num{font-size:36px}.grid-2,.grid-3,.summary-bar{grid-template-columns:1fr}.commit-item{grid-template-columns:70px 80px 1fr 40px}}
 </style>
 </head>
 <body>
-<div class="header">
-  <h1>GitHub活動ダッシュボード</h1>
-  <span class="period">2026/04/28 〜 05/12（15日間）</span>
-  <span class="auto">⚡ 3時間ごと自動更新</span>
-  <span class="updated">最終更新: 2026/05/12 06:35 JST</span>
-</div>
-<div class="metrics">
-  <div class="metric">
-    <div class="label">Commits</div>
-    <div class="value">940</div>
-    <div class="sub">日平均 62.7 / 9リポジトリ</div>
-  </div>
-  <div class="metric">
-    <div class="label">Pull Requests</div>
-    <div class="value">777</div>
-    <div class="sub">日平均 51.8</div>
-  </div>
-  <div class="metric">
-    <div class="label">Issues</div>
-    <div class="value">406</div>
-    <div class="sub">5日間にアクティビティ</div>
-  </div>
-  <div class="metric">
-    <div class="label">Net Lines</div>
-    <div class="value">+673,465</div>
-    <div class="sub">追加 732,063 / 削除 58,598</div>
-  </div>
-</div>
-<div class="charts-grid">
-  <div class="chart-card">
-    <h2>コミット / PR / Issue（日別）</h2>
-    <div class="legend">
-      <span><span class="dot" style="background:#8b7cf7"></span>コミット</span>
-      <span><span class="dot" style="background:#34d399"></span>PR</span>
-      <span><span class="dot" style="background:#f97066"></span>Issue</span>
+<div class="container">
+  <div class="hero">
+    <div class="hero-top">
+      <div>
+        <div class="hero-label">Today's Achievement</div>
+        <div class="hero-date">📅 2026/5/12（火）</div>
+      </div>
+      <div class="hero-badge">
+        <span class="badge badge-streak">🔥 0日連続</span>
+        <span class="badge badge-auto">⚡ 3h自動更新</span>
+      </div>
     </div>
-    <div class="chart-wrap h280"><canvas id="c1"></canvas></div>
-  </div>
-  <div class="chart-card">
-    <h2>コード増減（行数 / 日別）</h2>
-    <div class="legend">
-      <span><span class="dot" style="background:#34d399"></span>追加行</span>
-      <span><span class="dot" style="background:#f97066"></span>削除行</span>
-      <span><span class="line-dot" style="background:#8b7cf7"></span>純増（右軸）</span>
-    </div>
-    <div class="chart-wrap h280"><canvas id="c2"></canvas></div>
-  </div>
-  <div class="two-col">
-    <div class="chart-card">
-      <h2>リポジトリ別コミット数</h2>
-      <div class="chart-wrap h260"><canvas id="c3"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <h2>日別累積コード純増</h2>
-      <div class="chart-wrap h260"><canvas id="c4"></canvas></div>
+    <div class="hero-grid">
+      <div class="hero-stat"><div class="num">0</div><div class="label">Commits</div></div>
+      <div class="hero-stat"><div class="num">0</div><div class="label">Pull Requests</div></div>
+      <div class="hero-stat"><div class="num">+0</div><div class="label">Net Lines</div></div>
+      <div class="hero-stat"><div class="num">9</div><div class="label">Active Repos</div></div>
     </div>
   </div>
+
+  <div class="grid-3">
+    <div class="card">
+      <h2><span class="icon">⏰</span> 今日の時間帯別コミット</h2>
+      <div class="chart-wrap h180"><canvas id="hourly"></canvas></div>
+    </div>
+    <div class="card">
+      <h2><span class="icon">📋</span> 直近コミットログ</h2>
+      <div class="commit-list"><div class="commit-item"><span class="commit-time">05/12 08:59</span><span class="commit-repo">github-activity-dashboard</span><span class="commit-msg">🎨 v2: Today&#x27;s Achievement dashboard with hourly heatmap &amp; commit log</span><span class="commit-sha">07187b3</span></div>
+<div class="commit-item"><span class="commit-time">05/12 08:51</span><span class="commit-repo">trancall</span><span class="commit-msg">chore(lint): Zod v4 API 統一 + ESLint warnings 158 件解消 (#23)</span><span class="commit-sha">f8c328e</span></div>
+<div class="commit-item"><span class="commit-time">05/12 08:46</span><span class="commit-repo">trancall</span><span class="commit-msg">feat(mobile): Sprint 1 Layer 4-A — Expo skeleton + Auth/Onboarding (SCR-001/Logi</span><span class="commit-sha">50abc98</span></div>
+<div class="commit-item"><span class="commit-time">05/12 07:51</span><span class="commit-repo">trancall</span><span class="commit-msg">feat(design-system): TranCall Design System assets/docs を配置 (Layer 4 mobile 着手準備</span><span class="commit-sha">3f1aac2</span></div>
+<div class="commit-item"><span class="commit-time">05/12 04:48</span><span class="commit-repo">trancall</span><span class="commit-msg">feat(server): Sprint 1 Layer 3-A — API サーバー (Fastify + DI + Repository 具象 + REST</span><span class="commit-sha">6e7c037</span></div>
+<div class="commit-item"><span class="commit-time">05/12 04:09</span><span class="commit-repo">trancall</span><span class="commit-msg">feat(translation-agent): Sprint 1 Layer 3-B — Audio パイプライン + transcript.delta 送信</span><span class="commit-sha">d247c1c</span></div>
+<div class="commit-item"><span class="commit-time">05/12 03:49</span><span class="commit-repo">github-activity-dashboard</span><span class="commit-msg">🚀 Initial setup: fetch script, GitHub Actions workflow, README</span><span class="commit-sha">fc71a3e</span></div>
+<div class="commit-item"><span class="commit-time">05/12 03:46</span><span class="commit-repo">github-activity-dashboard</span><span class="commit-msg">Initial commit</span><span class="commit-sha">06d6152</span></div>
+<div class="commit-item"><span class="commit-time">05/12 03:34</span><span class="commit-repo">trancall</span><span class="commit-msg">feat(room): Sprint 1 Layer 2 — Room ライフサイクル管理モジュール実装 (#18)</span><span class="commit-sha">f1ace3c</span></div>
+<div class="commit-item"><span class="commit-time">05/12 02:55</span><span class="commit-repo">trancall</span><span class="commit-msg">docs(architecture): 6.2 主要テーブル定義を実装に追従 (#8)</span><span class="commit-sha">ea6e55a</span></div>
+<div class="commit-item"><span class="commit-time">05/12 02:55</span><span class="commit-repo">trancall</span><span class="commit-msg">docs(schemas): BillingFacade.reserveMinutes に sessionId 追加 (実装契約同期) (#17)</span><span class="commit-sha">a6673ca</span></div>
+<div class="commit-item"><span class="commit-time">05/12 02:48</span><span class="commit-repo">trancall</span><span class="commit-msg">docs(contracts): モジュール間関係の契約を canonical 集約 (#12)</span><span class="commit-sha">ca8ad76</span></div>
+<div class="commit-item"><span class="commit-time">05/12 02:48</span><span class="commit-repo">trancall</span><span class="commit-msg">feat(integration-tests): Layer 1 結合テストパッケージを新規追加 (#15)</span><span class="commit-sha">f059286</span></div>
+<div class="commit-item"><span class="commit-time">05/12 02:41</span><span class="commit-repo">trancall</span><span class="commit-msg">feat(supabase): translation_sessions.agent_job_id に UNIQUE 制約追加 (00006) (#16)</span><span class="commit-sha">fb4f307</span></div>
+<div class="commit-item"><span class="commit-time">05/12 02:38</span><span class="commit-repo">trancall</span><span class="commit-msg">docs: schemas.ts と requirements.md を Layer 1 完了状態に同期 (#13)</span><span class="commit-sha">c811ceb</span></div>
+<div class="commit-item"><span class="commit-time">05/12 02:37</span><span class="commit-repo">trancall</span><span class="commit-msg">test(shared-kernel): brand/result/language/events 単体テスト追加 (#14)</span><span class="commit-sha">e47c82b</span></div>
+<div class="commit-item"><span class="commit-time">05/12 02:31</span><span class="commit-repo">trancall</span><span class="commit-msg">fix(ui-kit): vitest.config.ts alias 絶対パスから相対パス化 (#11)</span><span class="commit-sha">183b7e1</span></div>
+<div class="commit-item"><span class="commit-time">05/12 02:07</span><span class="commit-repo">trancall</span><span class="commit-msg">chore: Layer 1 マージ後の pnpm-lock.yaml 統合 (#10)</span><span class="commit-sha">7e02436</span></div>
+<div class="commit-item"><span class="commit-time">05/12 01:57</span><span class="commit-repo">trancall</span><span class="commit-msg">feat(ui-kit): Sprint 1 デザイントークン・11コンポーネント・i18n 3言語 (#7)</span><span class="commit-sha">5c7212e</span></div>
+<div class="commit-item"><span class="commit-time">05/12 01:57</span><span class="commit-repo">trancall</span><span class="commit-msg">feat(notification): APNs VoIP Push + FCM 実装 (#6)</span><span class="commit-sha">fcd2cf6</span></div>
 </div>
-<div class="footer">
-  Powered by <a href="https://github.com/DaisukeHori/github-activity-dashboard">GitHub Actions</a> — auto-generated every 3 hours
+    </div>
+  </div>
+
+  <div style="font-size:13px;color:var(--text3);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+    <span>📊 2026/04/28 〜 05/12（15日間）</span>
+    <span>ピーク: 4/30（153コミット）</span>
+  </div>
+  <div class="summary-bar">
+    <div class="summary-item"><div class="val c-purple">944</div><div class="lbl">Total Commits</div></div>
+    <div class="summary-item"><div class="val c-green">781</div><div class="lbl">Total PRs</div></div>
+    <div class="summary-item"><div class="val c-coral">406</div><div class="lbl">Total Issues</div></div>
+    <div class="summary-item"><div class="val c-blue">+683,176</div><div class="lbl">Net Lines</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h2><span class="icon">📈</span> コミット / PR / Issue</h2>
+      <div class="legend"><span><span class="dot" style="background:#8b7cf7"></span>コミット</span><span><span class="dot" style="background:#34d399"></span>PR</span><span><span class="dot" style="background:#ef4444"></span>Issue</span></div>
+      <div class="chart-wrap h220"><canvas id="c1"></canvas></div>
+    </div>
+    <div class="card">
+      <h2><span class="icon">💻</span> コード増減</h2>
+      <div class="legend"><span><span class="dot" style="background:#22c55e"></span>追加</span><span><span class="dot" style="background:#ef4444"></span>削除</span><span><span class="line-dot" style="background:#8b7cf7"></span>純増</span></div>
+      <div class="chart-wrap h220"><canvas id="c2"></canvas></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <h2><span class="icon">📦</span> リポジトリ別</h2>
+      <div class="chart-wrap h220"><canvas id="c3"></canvas></div>
+    </div>
+    <div class="card">
+      <h2><span class="icon">🚀</span> 累積コード純増</h2>
+      <div class="chart-wrap h220"><canvas id="c4"></canvas></div>
+    </div>
+  </div>
+
+  <div class="footer">最終更新: 2026/05/12 08:59 JST　|　Powered by <a href="https://github.com/DaisukeHori/github-activity-dashboard">GitHub Actions</a></div>
 </div>
+
 <script>
-Chart.defaults.font.family = "'Noto Sans JP', sans-serif";
-Chart.defaults.color = '#6c6a78';
-const L = ["4/28", "4/29", "4/30", "5/1", "5/2", "5/3", "5/4", "5/5", "5/6", "5/7", "5/8", "5/9", "5/10", "5/11", "5/12"];
-const cm = [8, 52, 153, 150, 64, 44, 118, 145, 18, 4, 117, 9, 15, 43, 0];
-const pr = [3, 2, 108, 158, 76, 43, 101, 91, 18, 4, 126, 9, 18, 20, 0];
-const is_ = [0, 73, 188, 114, 15, 0, 0, 0, 0, 0, 16, 0, 0, 0, 0];
-const ad = [2436, 17031, 126890, 84473, 25236, 49012, 117448, 122938, 4744, 44454, 71644, 1630, 11945, 52182, 0];
-const dl = [269, 978, 9930, 6921, 5275, 5581, 5422, 7736, 416, 7054, 5612, 256, 682, 2466, 0];
-const nt = ad.map((a,i) => a - dl[i]);
-const cu = []; nt.reduce((a,v,i) => { cu[i]=a+v; return cu[i]; }, 0);
-const g = 'rgba(255,255,255,0.04)', t = '#6c6a78';
-const tt = { backgroundColor:'#242736', titleColor:'#e8e6e3', bodyColor:'#9b99a5', borderColor:'rgba(255,255,255,0.08)', borderWidth:1 };
+Chart.defaults.font.family="'Noto Sans JP',sans-serif";
+Chart.defaults.color='#71717a';
+const g='rgba(255,255,255,0.04)',tc='#52525b';
+const tt={backgroundColor:'#27272a',titleColor:'#fafafa',bodyColor:'#a1a1aa',borderColor:'rgba(255,255,255,0.08)',borderWidth:1,padding:10,cornerRadius:8};
 
-new Chart(document.getElementById('c1'), {
-  type:'bar',
-  data:{ labels:L, datasets:[
-    { label:'コミット', data:cm, backgroundColor:'#8b7cf7', borderRadius:4, barPercentage:.65, categoryPercentage:.8 },
-    { label:'PR', data:pr, backgroundColor:'#34d399', borderRadius:4, barPercentage:.65, categoryPercentage:.8 },
-    { label:'Issue', data:is_, backgroundColor:'#f97066', borderRadius:4, barPercentage:.65, categoryPercentage:.8 }
-  ]},
-  options:{ responsive:true, maintainAspectRatio:false,
-    plugins:{ legend:{display:false}, tooltip:{mode:'index', intersect:false, ...tt} },
-    scales:{ x:{grid:{display:false}, ticks:{color:t, font:{size:11}, autoSkip:false}}, y:{grid:{color:g}, ticks:{color:t, font:{size:11}}, beginAtZero:true} }
-  }
-});
+const hArr=[2, 9, 9, 3, 2, 0, 0, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+new Chart(document.getElementById('hourly'),{type:'bar',data:{labels:["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"],datasets:[{data:hArr,backgroundColor:function(ctx){const v=ctx.raw;const m=Math.max(...hArr);return v===m?'#8b7cf7':v>0?'rgba(139,124,247,0.4)':'rgba(139,124,247,0.08)'},borderRadius:4,barPercentage:.7}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...tt,callbacks:{label:c=>c.raw+' commits'}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:9}}},y:{display:false,beginAtZero:true}}}});
 
-new Chart(document.getElementById('c2'), {
-  type:'bar',
-  data:{ labels:L, datasets:[
-    { label:'追加', data:ad, backgroundColor:'rgba(52,211,153,0.7)', borderRadius:4, barPercentage:.55, categoryPercentage:.85, yAxisID:'y' },
-    { label:'削除', data:dl.map(d=>-d), backgroundColor:'rgba(249,112,102,0.7)', borderRadius:4, barPercentage:.55, categoryPercentage:.85, yAxisID:'y' },
-    { label:'純増', data:nt, type:'line', borderColor:'#8b7cf7', borderWidth:2.5, pointRadius:3, pointBackgroundColor:'#8b7cf7', fill:false, yAxisID:'y2', tension:.35 }
-  ]},
-  options:{ responsive:true, maintainAspectRatio:false,
-    plugins:{ legend:{display:false},
-      tooltip:{ mode:'index', intersect:false, ...tt,
-        callbacks:{ label: ctx => { const v=ctx.raw; return ctx.dataset.label+': '+(v<0?'-':'+')+Math.abs(v).toLocaleString()+' 行'; } }
-      }
-    },
-    scales:{
-      x:{ grid:{display:false}, ticks:{color:t, font:{size:11}, autoSkip:false}, stacked:true },
-      y:{ grid:{color:g}, ticks:{color:t, font:{size:11}, callback:v=>(v<0?'-':'')+(Math.abs(v)/1000).toFixed(0)+'k'}, stacked:true, position:'left' },
-      y2:{ grid:{display:false}, ticks:{color:'#8b7cf7', font:{size:11}, callback:v=>(v/1000).toFixed(0)+'k'}, position:'right', beginAtZero:true }
-    }
-  }
-});
+const L=["4/28", "4/29", "4/30", "5/1", "5/2", "5/3", "5/4", "5/5", "5/6", "5/7", "5/8", "5/9", "5/10", "5/11", "5/12"];
+const cm=[8, 52, 153, 150, 64, 44, 118, 145, 18, 4, 117, 9, 15, 47, 0];const pr=[3, 2, 108, 158, 76, 43, 101, 91, 18, 4, 126, 9, 18, 24, 0];const is_=[0, 73, 188, 114, 15, 0, 0, 0, 0, 0, 16, 0, 0, 0, 0];
+new Chart(document.getElementById('c1'),{type:'bar',data:{labels:L,datasets:[{label:'コミット',data:cm,backgroundColor:'#8b7cf7',borderRadius:4,barPercentage:.6,categoryPercentage:.8},{label:'PR',data:pr,backgroundColor:'#34d399',borderRadius:4,barPercentage:.6,categoryPercentage:.8},{label:'Issue',data:is_,backgroundColor:'#ef4444',borderRadius:4,barPercentage:.6,categoryPercentage:.8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,...tt}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:10},autoSkip:false}},y:{grid:{color:g},ticks:{color:tc,font:{size:10}},beginAtZero:true}}}});
 
-new Chart(document.getElementById('c3'), {
-  type:'bar',
-  data:{ labels:["homegohan-app", "HairSnap", "trancall", "hubspot-ma-mcp", "msgraph-mcp-server2", "msgraph-mcp-server", "github-activity-dashboard", "iroca-color-simulator", "pywinauto-mcp"], datasets:[{ data:[611, 264, 41, 13, 3, 3, 2, 2, 1], backgroundColor:["#8b7cf7", "#34d399", "#fbbf24", "#f97066", "#60a5fa", "#c084fc", "#fb923c", "#9b99a5", "#9b99a5"], borderRadius:4, barPercentage:.6 }] },
-  options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
-    plugins:{ legend:{display:false}, tooltip:{...tt, callbacks:{label:ctx=>ctx.raw.toLocaleString()+' commits'}} },
-    scales:{ x:{grid:{color:g}, ticks:{color:t, font:{size:11}}, beginAtZero:true}, y:{grid:{display:false}, ticks:{color:'#9b99a5', font:{size:11}}} }
-  }
-});
+const ad=[2436, 17031, 126890, 84473, 25236, 49012, 117448, 122938, 4744, 44454, 71644, 1630, 11945, 65550, 0];const dl=[269, 978, 9930, 6921, 5275, 5581, 5422, 7736, 416, 7054, 5612, 256, 682, 6123, 0];const nt=ad.map((a,i)=>a-dl[i]);
+new Chart(document.getElementById('c2'),{type:'bar',data:{labels:L,datasets:[{label:'追加',data:ad,backgroundColor:'rgba(34,197,94,0.6)',borderRadius:4,barPercentage:.5,categoryPercentage:.85,yAxisID:'y'},{label:'削除',data:dl.map(d=>-d),backgroundColor:'rgba(239,68,68,0.6)',borderRadius:4,barPercentage:.5,categoryPercentage:.85,yAxisID:'y'},{label:'純増',data:nt,type:'line',borderColor:'#8b7cf7',borderWidth:2,pointRadius:2.5,pointBackgroundColor:'#8b7cf7',fill:false,yAxisID:'y2',tension:.35}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,...tt,callbacks:{label:c=>{const v=c.raw;return c.dataset.label+': '+(v<0?'-':'+')+Math.abs(v).toLocaleString()+' 行'}}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:10},autoSkip:false},stacked:true},y:{grid:{color:g},ticks:{color:tc,font:{size:10},callback:v=>(v<0?'-':'')+(Math.abs(v)/1000).toFixed(0)+'k'},stacked:true,position:'left'},y2:{grid:{display:false},ticks:{color:'#8b7cf7',font:{size:10},callback:v=>(v/1000).toFixed(0)+'k'},position:'right',beginAtZero:true}}}});
 
-new Chart(document.getElementById('c4'), {
-  type:'line',
-  data:{ labels:L, datasets:[{
-    label:'累積純増', data:cu, borderColor:'#60a5fa', borderWidth:2.5,
-    pointRadius:3, pointBackgroundColor:'#60a5fa', fill:true,
-    backgroundColor:'rgba(96,165,250,0.08)', tension:.3
-  }] },
-  options:{ responsive:true, maintainAspectRatio:false,
-    plugins:{ legend:{display:false}, tooltip:{...tt, callbacks:{label:ctx=>'+'+ctx.raw.toLocaleString()+' 行'}} },
-    scales:{ x:{grid:{display:false}, ticks:{color:t, font:{size:11}, autoSkip:false}}, y:{grid:{color:g}, ticks:{color:t, font:{size:11}, callback:v=>(v/1000).toFixed(0)+'k'}, beginAtZero:true} }
-  }
-});
+new Chart(document.getElementById('c3'),{type:'bar',data:{labels:["homegohan-app", "HairSnap", "trancall", "hubspot-ma-mcp", "github-activity-dashboard", "msgraph-mcp-server2", "msgraph-mcp-server", "iroca-color-simulator", "pywinauto-mcp"],datasets:[{data:[611, 264, 44, 13, 3, 3, 3, 2, 1],backgroundColor:["#8b7cf7", "#34d399", "#fbbf24", "#f97066", "#60a5fa", "#c084fc", "#fb923c", "#a78bfa", "#38bdf8"],borderRadius:4,barPercentage:.55}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...tt,callbacks:{label:c=>c.raw.toLocaleString()+' commits'}}},scales:{x:{grid:{color:g},ticks:{color:tc,font:{size:10}},beginAtZero:true},y:{grid:{display:false},ticks:{color:'#a1a1aa',font:{size:10}}}}}});
+
+const cu=[2167, 18220, 135180, 212732, 232693, 276124, 388150, 503352, 507680, 545080, 611112, 612486, 623749, 683176, 683176];
+new Chart(document.getElementById('c4'),{type:'line',data:{labels:L,datasets:[{label:'累積純増',data:cu,borderColor:'#3b82f6',borderWidth:2.5,pointRadius:2.5,pointBackgroundColor:'#3b82f6',fill:true,backgroundColor:function(ctx){const c=ctx.chart.ctx;const gr=c.createLinearGradient(0,0,0,ctx.chart.height);gr.addColorStop(0,'rgba(59,130,246,0.15)');gr.addColorStop(1,'rgba(59,130,246,0)');return gr},tension:.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...tt,callbacks:{label:c=>'+'+c.raw.toLocaleString()+' 行'}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:10},autoSkip:false}},y:{grid:{color:g},ticks:{color:tc,font:{size:10},callback:v=>(v/1000).toFixed(0)+'k'},beginAtZero:true}}}});
 </script>
 </body>
 </html>
