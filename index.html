@@ -37,6 +37,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .hero-stat:nth-child(4) .num{background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .hero-stat .pct{font-size:10px;color:var(--cyan);margin-top:4px;font-weight:400;opacity:.9}
 .hero-sub-stats{display:flex;gap:24px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);flex-wrap:wrap}
+.repo-delta-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:12px}
+.repo-delta{background:rgba(255,255,255,0.03);border-radius:8px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;font-size:11px}
+.repo-delta .rname{color:var(--text2);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px}
+.repo-delta .rstat{display:flex;gap:8px;align-items:center;white-space:nowrap}
+.repo-delta .rloc{color:var(--text3);font-family:'JetBrains Mono',monospace;font-size:10px}
+.repo-delta .rpct{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500}
+.rpct.up{color:var(--green)}.rpct.down{color:var(--coral)}.rpct.zero{color:var(--text3)}
 .bench-note{font-size:10px;color:var(--text3);margin-top:16px;text-align:right;opacity:.7}
 .bench-note a{text-decoration:none}
 .hero-stat .equiv{font-size:11px;color:var(--amber);margin-top:4px;font-weight:400;opacity:.85}
@@ -100,6 +107,30 @@ const G='rgba(255,255,255,0.04)',TC='#52525b';
 const TT={backgroundColor:'#27272a',titleColor:'#fafafa',bodyColor:'#a1a1aa',borderColor:'rgba(255,255,255,0.08)',borderWidth:1,padding:10,cornerRadius:8};
 function fmtLoc(n){if(n>=1000000)return (n/1000000).toFixed(1)+'M';if(n>=1000)return (n/1000).toFixed(1)+'K';return String(n)}
 function pctStr(delta,total){if(total<=0)return '—';const p=(delta/total*100);return (p>=0?'+':'')+p.toFixed(2)+'%'}
+function buildRepoDeltaHTML(a){
+  if(!a.repoLoc||Object.keys(a.repoLoc).length===0)return '';
+  // Calc today's add/del per repo
+  const todayByRepo={};
+  if(RAW&&RAW.commits){
+    for(const c of RAW.commits){
+      const loc=toLocal(c.utc,CUR_TZ);
+      if(dateStr(loc)===a.today){
+        if(!todayByRepo[c.repo])todayByRepo[c.repo]={add:0,del:0};
+        todayByRepo[c.repo].add+=c.add;
+        todayByRepo[c.repo].del+=c.del;
+      }
+    }
+  }
+  const sorted=Object.entries(a.repoLoc).sort((x,y)=>y[1]-x[1]);
+  return sorted.map(([repo,loc])=>{
+    const t=todayByRepo[repo]||{add:0,del:0};
+    const net=t.add-t.del;
+    const pct=loc>0?(net/loc*100):0;
+    const cls=net>0?'up':net<0?'down':'zero';
+    const sign=net>0?'+':'';
+    return '<div class="repo-delta"><span class="rname">'+esc(repo)+'</span><span class="rstat"><span class="rloc">'+fmtLoc(loc)+'</span><span class="rpct '+cls+'">'+sign+pct.toFixed(2)+'%</span></span></div>';
+  }).join('');
+}
 const PALETTE=["#8b7cf7","#34d399","#fbbf24","#f97066","#60a5fa","#c084fc","#fb923c","#a78bfa","#38bdf8","#4ade80","#e879f9","#f472b6"];
 
 let RAW=null, CHARTS=[], CUR_TZ=9;
@@ -271,8 +302,10 @@ function render(raw){
     </div>
     <div class="hero-sub-stats">
       <span>📝 合計コード: ${fmtLoc(a.totalLoc)} 行（${a.activeRepos}リポジトリ）</span>
-      <span>⚡ 今日の増分: ${a.totalLoc>0?pctStr(tNet,a.totalLoc):'—'}</span>
       <span>≈ エンジニア${(a.tCommits/5).toFixed(1)}人日分</span>
+    </div>
+    <div class="repo-delta-grid" id="repoDeltaGrid">
+      ${buildRepoDeltaHTML(a)}
     </div>
     <div class="bench-note">※ 人日換算基準: コミット5回/日, PR 1件/日, コード純増100行/日 (<a href="https://blog.ndepend.com/mythical-man-month-10-lines-per-developer-day/" target="_blank" style="color:var(--purple)">NDepend研究</a>等に基づく一般的エンジニアの1日平均)</div>
   </div>
