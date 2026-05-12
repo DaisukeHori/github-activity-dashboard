@@ -310,7 +310,7 @@ function render(raw){
       <div class="chart-wrap h220"><canvas id="c4"></canvas></div>
     </div>
   </div>
-  <div class="footer">最終更新: ${updStr}　|　Powered by <a href="https://github.com/DaisukeHori/github-activity-dashboard">GitHub Actions</a></div>
+  <div class="footer"><span id="autoRefresh" style="font-size:10px;color:var(--green);margin-right:12px">🔄 自動更新中</span>最終更新: ${updStr}　|　Powered by <a href="https://github.com/DaisukeHori/github-activity-dashboard">GitHub Actions</a></div>
   `;
 
   // === CHARTS ===
@@ -366,10 +366,46 @@ function render(raw){
 
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 
-fetch('data.json?t='+Date.now())
-  .then(r=>r.json())
-  .then(data=>{RAW=data;highlightTZ();render(data)})
-  .catch(e=>{document.getElementById('dashboard').innerHTML='<div class="loading">❌ Failed to load data.json</div>';console.error(e)});
+let LAST_UPDATE='';
+
+function fetchData(){
+  fetch('data.json?t='+Date.now())
+    .then(r=>r.json())
+    .then(data=>{
+      if(data.updated_at_utc!==LAST_UPDATE){
+        LAST_UPDATE=data.updated_at_utc;
+        RAW=data;
+        highlightTZ();
+        render(data);
+        console.log('[Dashboard] Data updated:',data.updated_at_utc);
+      }
+    })
+    .catch(e=>{
+      if(!RAW) document.getElementById('dashboard').innerHTML='<div class="loading">❌ Failed to load data.json</div>';
+      console.error(e);
+    });
+}
+
+// Initial load
+fetchData();
+
+// Auto-refresh: poll every 60s, detect new data
+setInterval(fetchData, 60*1000);
+
+// Also sync to cron: at :03 and :08 past each 5-min mark, do an extra fetch
+// (cron runs at :00,:05,:10,...; data lands ~1-3 min later)
+function scheduleNextSync(){
+  const now=new Date();
+  const min=now.getMinutes();
+  const sec=now.getSeconds();
+  // Next :03 or :08 past a 5-min boundary
+  const targets=[3,8,13,18,23,28,33,38,43,48,53,58];
+  let next=targets.find(t=>t>min)||(targets[0]+60);
+  let delay=((next-min)*60-sec)*1000;
+  if(delay<5000) delay+=300000; // avoid firing immediately
+  setTimeout(()=>{fetchData();scheduleNextSync()},delay);
+}
+scheduleNextSync();
 </script>
 </body>
 </html>
