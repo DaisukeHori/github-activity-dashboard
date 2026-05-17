@@ -951,12 +951,15 @@ let LAST_UPDATE='';
 function fetchData(){
   fetch('data.json?t='+Date.now())
     .then(r=>r.json())
-    .then(data=>{
+    .then(async data=>{
       if(data.updated_at_utc!==LAST_UPDATE){
         LAST_UPDATE=data.updated_at_utc;
         RAW=data;
         highlightTZ();
-        highlightPeriod();
+        // 保持された PERIOD_RANGE が archive 期間を指していたら、先にfetch
+        if(PERIOD_RANGE&&PERIOD_RANGE.start){
+          try{await ensureArchivesForRange(PERIOD_RANGE.start)}catch(e){console.error('[Archive prefetch]',e)}
+        }
         render(data);
         console.log('[Dashboard] Data updated:',data.updated_at_utc);
       }
