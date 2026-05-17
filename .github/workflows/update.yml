@@ -38,6 +38,22 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data.json commits_db.json
-          git diff --cached --quiet || git commit -m "📊 Update data $(TZ=Asia/Tokyo date +'%Y-%m-%d %H:%M JST')"
-          git push
+          git add data.json commits_db.json prs_db.json issues_db.json streak_db.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "📊 Update data $(TZ=Asia/Tokyo date +'%Y-%m-%d %H:%M JST')"
+          # push リトライ (3回まで、競合時は rebase してから再push)
+          for i in 1 2 3; do
+            if git push; then
+              echo "Push succeeded on attempt $i"
+              exit 0
+            fi
+            echo "Push failed on attempt $i, fetching and rebasing..."
+            git fetch origin main
+            git rebase origin/main || git rebase --abort
+            sleep 2
+          done
+          echo "Push failed after 3 attempts"
+          exit 1
