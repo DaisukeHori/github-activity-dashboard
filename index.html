@@ -142,22 +142,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <input type="number" class="tz-custom" id="tzCustom" min="-12" max="14" step="1" placeholder="±hrs" onchange="setTZ(Number(this.value))">
     <span class="tz-display" id="tzDisplay"></span>
   </div>
-  <div class="period-bar">
-    <label>📅 Period:</label>
-    <button class="period-btn" data-days="7" onclick="setPeriod(7)">1週間</button>
-    <button class="period-btn" data-days="14" onclick="setPeriod(14)">2週間</button>
-    <button class="period-btn" data-days="30" onclick="setPeriod(30)">1ヶ月</button>
-    <button class="period-btn" data-days="90" onclick="setPeriod(90)">3ヶ月</button>
-    <button class="period-btn" data-days="180" onclick="setPeriod(180)">6ヶ月</button>
-    <button class="period-btn" data-days="365" onclick="setPeriod(365)">1年</button>
-    <span style="font-size:11px;color:var(--text3)">or</span>
-    <div class="period-custom-range">
-      <input type="date" id="periodStart" onchange="onCustomChange()" title="開始日">
-      <span style="color:var(--text3)">〜</span>
-      <input type="date" id="periodEnd" onchange="onCustomChange()" title="終了日">
-    </div>
-    <span class="period-display" id="periodDisplay"></span>
-  </div>
   <div id="dashboard"><div class="loading">⏳ Loading data...</div></div>
 </div>
 
@@ -201,22 +185,13 @@ function tzName(offset){
 function setTZ(offset){CUR_TZ=offset;localStorage.setItem('dashboard_tz',String(offset));highlightTZ();if(RAW)render(RAW)}
 
 function highlightPeriod(){
-  document.querySelectorAll('.period-btn').forEach(b=>{b.classList.toggle('active',PERIOD_DAYS!==null&&Number(b.dataset.days)===PERIOD_DAYS)});
-  let displayText='';
-  if(PERIOD_DAYS){
-    displayText=`直近 ${PERIOD_DAYS} 日`;
-  }else if(PERIOD_RANGE){
-    displayText=`${PERIOD_RANGE.start} 〜 ${PERIOD_RANGE.end}`;
-  }
-  document.getElementById('periodDisplay').textContent=displayText;
+  // active クラスは render() 内のテンプレートで直接付与するため、ここでは何もしない
+  // (互換性のため関数は残置)
 }
 function setPeriod(days){
   PERIOD_DAYS=days;PERIOD_RANGE=null;
   localStorage.setItem('dashboard_period',JSON.stringify({days}));
-  // Clear custom range inputs
-  document.getElementById('periodStart').value='';
-  document.getElementById('periodEnd').value='';
-  highlightPeriod();if(RAW)render(RAW);
+  if(RAW)render(RAW);
 }
 function onCustomChange(){
   const s=document.getElementById('periodStart').value;
@@ -224,7 +199,7 @@ function onCustomChange(){
   if(s&&e&&s<=e){
     PERIOD_DAYS=null;PERIOD_RANGE={start:s,end:e};
     localStorage.setItem('dashboard_period',JSON.stringify({range:PERIOD_RANGE}));
-    highlightPeriod();if(RAW)render(RAW);
+    if(RAW)render(RAW);
   }
 }
 
@@ -605,6 +580,23 @@ function render(raw){
     </div>
   </div>
 
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin:24px 0 10px;flex-wrap:wrap;gap:8px">
+    <div class="period-bar" style="margin-bottom:0">
+      <label>📅 Period:</label>
+      <button class="period-btn${PERIOD_DAYS===7?' active':''}" data-days="7" onclick="setPeriod(7)">1週間</button>
+      <button class="period-btn${PERIOD_DAYS===14?' active':''}" data-days="14" onclick="setPeriod(14)">2週間</button>
+      <button class="period-btn${PERIOD_DAYS===30?' active':''}" data-days="30" onclick="setPeriod(30)">1ヶ月</button>
+      <button class="period-btn${PERIOD_DAYS===90?' active':''}" data-days="90" onclick="setPeriod(90)">3ヶ月</button>
+      <button class="period-btn${PERIOD_DAYS===180?' active':''}" data-days="180" onclick="setPeriod(180)">6ヶ月</button>
+      <button class="period-btn${PERIOD_DAYS===365?' active':''}" data-days="365" onclick="setPeriod(365)">1年</button>
+      <span style="font-size:11px;color:var(--text3)">or</span>
+      <div class="period-custom-range">
+        <input type="date" id="periodStart" value="${PERIOD_RANGE?PERIOD_RANGE.start:''}" onchange="onCustomChange()" title="開始日">
+        <span style="color:var(--text3)">〜</span>
+        <input type="date" id="periodEnd" value="${PERIOD_RANGE?PERIOD_RANGE.end:''}" onchange="onCustomChange()" title="終了日">
+      </div>
+    </div>
+  </div>
   <div style="font-size:13px;color:var(--text3);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
     <span>📊 ${periodStr}</span>
     <span>ピーク: ${peakDisplay}（${a.peakCount}コミット）</span>
