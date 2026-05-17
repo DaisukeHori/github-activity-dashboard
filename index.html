@@ -47,6 +47,19 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .bench-note{font-size:10px;color:var(--text3);margin-top:16px;text-align:right;opacity:.7}
 .bench-note a{text-decoration:none}
 .hero-stat .equiv{font-size:11px;color:var(--amber);margin-top:4px;font-weight:400;opacity:.85}
+/* === 日付ピッカー === */
+.hero-date-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.date-picker-btn{background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--text);font-size:15px;font-weight:500;padding:6px 12px;border-radius:10px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all .15s;position:relative}
+.date-picker-btn:hover{background:rgba(139,124,247,0.12);border-color:var(--purple);color:#fff}
+.date-picker-btn::after{content:'▾';font-size:10px;color:var(--text3);margin-left:2px}
+.date-picker-btn:hover::after{color:var(--purple)}
+.back-to-today{background:rgba(139,124,247,0.15);border:1px solid rgba(139,124,247,0.3);color:var(--purple);font-size:11px;padding:4px 10px;border-radius:14px;cursor:pointer;font-family:inherit;transition:all .15s}
+.back-to-today:hover{background:var(--purple);color:#fff;border-color:var(--purple)}
+.past-day-banner{display:inline-flex;align-items:center;gap:6px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);color:var(--amber);font-size:11px;padding:4px 10px;border-radius:14px;margin-left:6px}
+.snapshot-note{font-size:10px;color:var(--text3);opacity:.75;margin-left:4px}
+#dateInput{position:absolute;opacity:0;pointer-events:none;width:0;height:0;left:0;top:0}
+/* date input picker indicator (in case fallback is needed) */
+#dateInput::-webkit-calendar-picker-indicator{cursor:pointer}
 .hero-stat .label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
 .num{animation:fadeUp .6s ease-out both}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
@@ -109,21 +122,21 @@ function fmtLoc(n){if(n>=1000000)return (n/1000000).toFixed(1)+'M';if(n>=1000)re
 function pctStr(delta,total){if(total<=0)return '—';const p=(delta/total*100);return (p>=0?'+':'')+p.toFixed(2)+'%'}
 function buildRepoDeltaHTML(a){
   if(!a.repoLoc||Object.keys(a.repoLoc).length===0)return '';
-  // Calc today's add/del per repo
-  const todayByRepo={};
+  // Calc selected day's add/del per repo
+  const dayByRepo={};
   if(RAW&&RAW.commits){
     for(const c of RAW.commits){
       const loc=toLocal(c.utc,CUR_TZ);
-      if(dateStr(loc)===a.today){
-        if(!todayByRepo[c.repo])todayByRepo[c.repo]={add:0,del:0};
-        todayByRepo[c.repo].add+=c.add;
-        todayByRepo[c.repo].del+=c.del;
+      if(dateStr(loc)===a.selectedDay){
+        if(!dayByRepo[c.repo])dayByRepo[c.repo]={add:0,del:0};
+        dayByRepo[c.repo].add+=c.add;
+        dayByRepo[c.repo].del+=c.del;
       }
     }
   }
   const sorted=Object.entries(a.repoLoc).sort((x,y)=>y[1]-x[1]);
   return sorted.map(([repo,loc])=>{
-    const t=todayByRepo[repo]||{add:0,del:0};
+    const t=dayByRepo[repo]||{add:0,del:0};
     const net=t.add-t.del;
     const pct=loc>0?(net/loc*100):0;
     const cls=net>0?'up':net<0?'down':'zero';
@@ -133,7 +146,7 @@ function buildRepoDeltaHTML(a){
 }
 const PALETTE=["#8b7cf7","#34d399","#fbbf24","#f97066","#60a5fa","#c084fc","#fb923c","#a78bfa","#38bdf8","#4ade80","#e879f9","#f472b6"];
 
-let RAW=null, CHARTS=[], CUR_TZ=9;
+let RAW=null, CHARTS=[], CUR_TZ=9, SELECTED_DATE=null;
 const saved=localStorage.getItem('dashboard_tz');
 if(saved!==null) CUR_TZ=Number(saved);
 
@@ -154,9 +167,11 @@ function shortDate(d){return(d.getUTCMonth()+1)+'/'+d.getUTCDate()}
 function timeStr(d){return String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0')}
 const WD=['日','月','火','水','木','金','土'];
 
-function aggregate(raw,offset){
+function aggregate(raw,offset,selectedDayInput){
   const now=toLocal(new Date().toISOString(),offset);
   const today=dateStr(now);
+  const selectedDay=selectedDayInput||today;
+  const isToday=selectedDay===today;
   const sinceLocal=toLocal(raw.since_utc,offset);
   const dates=[];
   let d=new Date(Date.UTC(sinceLocal.getUTCFullYear(),sinceLocal.getUTCMonth(),sinceLocal.getUTCDate()));
@@ -165,13 +180,13 @@ function aggregate(raw,offset){
 
   const daily={commits:{},prs:{},issues:{},add:{},del:{}};
   const repoCount={};
-  const recentCommits=[];
+  const commitsByDay={};  // ds -> [commit display obj]
 
-  // Hourly by repo + hourly lines (today only)
+  // Hourly by repo + hourly lines (selected day only)
   const hourlyByRepo={};  // repo -> {h: count}
   const hourlyAdd={};     // h -> total additions
   const hourlyDel={};     // h -> total deletions
-  const todayRepos=new Set();
+  const dayRepos=new Set();
 
   for(const c of raw.commits){
     const loc=toLocal(c.utc,offset);
@@ -180,54 +195,64 @@ function aggregate(raw,offset){
     daily.add[ds]=(daily.add[ds]||0)+c.add;
     daily.del[ds]=(daily.del[ds]||0)+c.del;
     repoCount[c.repo]=(repoCount[c.repo]||0)+1;
-    if(ds===today){
+    if(ds===selectedDay){
       const h=loc.getUTCHours();
-      todayRepos.add(c.repo);
+      dayRepos.add(c.repo);
       if(!hourlyByRepo[c.repo])hourlyByRepo[c.repo]={};
       hourlyByRepo[c.repo][h]=(hourlyByRepo[c.repo][h]||0)+1;
       hourlyAdd[h]=(hourlyAdd[h]||0)+c.add;
       hourlyDel[h]=(hourlyDel[h]||0)+c.del;
     }
-    recentCommits.push({repo:c.repo,msg:c.msg,sha:c.sha,add:c.add,del:c.del,localDate:shortDate(loc),localTime:timeStr(loc),sortKey:c.utc});
+    if(!commitsByDay[ds])commitsByDay[ds]=[];
+    commitsByDay[ds].push({repo:c.repo,msg:c.msg,sha:c.sha,add:c.add,del:c.del,localDate:shortDate(loc),localTime:timeStr(loc),sortKey:c.utc});
   }
 
   for(const utc of raw.prs){const loc=toLocal(utc,offset);const ds=dateStr(loc);daily.prs[ds]=(daily.prs[ds]||0)+1}
   for(const utc of raw.issues){const loc=toLocal(utc,offset);const ds=dateStr(loc);daily.issues[ds]=(daily.issues[ds]||0)+1}
 
+  // Streak from today backwards (independent of selected day)
   let streak=0;
-  for(let i=dates.length-1;i>=0;i--){if((daily.commits[dates[i]]||0)>0)streak++;else break}
+  for(let i=dates.length-1;i>=0;i--){
+    if(dates[i]>today)continue;
+    if((daily.commits[dates[i]]||0)>0)streak++;else break;
+  }
 
-  recentCommits.sort((a,b)=>b.sortKey.localeCompare(a.sortKey));
-  const top20=recentCommits.slice(0,20);
+  // Display commits for the selected day (sorted desc)
+  const displayCommits=(commitsByDay[selectedDay]||[]).slice().sort((a,b)=>b.sortKey.localeCompare(a.sortKey));
 
-  const tCommits=daily.commits[today]||0;
-  const tPrs=daily.prs[today]||0;
-  const tAdd=daily.add[today]||0;
-  const tDel=daily.del[today]||0;
+  const tCommits=daily.commits[selectedDay]||0;
+  const tPrs=daily.prs[selectedDay]||0;
+  const tIssues=daily.issues[selectedDay]||0;
+  const tAdd=daily.add[selectedDay]||0;
+  const tDel=daily.del[selectedDay]||0;
   const activeRepos=Object.keys(repoCount).length;
 
   let peakDay=dates[0],peakCount=0;
   for(const d of dates){const v=daily.commits[d]||0;if(v>peakCount){peakCount=v;peakDay=d}}
 
-  // Sort today's repos by commit count
-  const todayReposSorted=[...todayRepos].sort((a,b)=>{
+  // Sort selected day's repos by commit count
+  const dayReposSorted=[...dayRepos].sort((a,b)=>{
     const ca=Object.values(hourlyByRepo[a]||{}).reduce((s,v)=>s+v,0);
     const cb=Object.values(hourlyByRepo[b]||{}).reduce((s,v)=>s+v,0);
     return cb-ca;
   });
 
-  // Totals from server data
+  // Totals from server data (snapshot - always "current")
   const totalLoc=raw.total_loc||0;
   const openPrs=raw.open_prs||0;
   const openIssues=raw.open_issues||0;
   const repoLoc=raw.repo_loc||{};
 
-  return {dates,daily,hourlyByRepo,hourlyAdd,hourlyDel,todayReposSorted,repoCount,streak,today,tCommits,tPrs,tAdd,tDel,activeRepos,top20,peakDay,peakCount,now,totalLoc,openPrs,openIssues,repoLoc};
+  // Min/Max for date picker (data range)
+  const dataMin=dates[0]||today;
+  const dataMax=today;
+
+  return {dates,daily,hourlyByRepo,hourlyAdd,hourlyDel,todayReposSorted:dayReposSorted,repoCount,streak,today,selectedDay,isToday,tCommits,tPrs,tIssues,tAdd,tDel,activeRepos,top20:displayCommits,peakDay,peakCount,now,totalLoc,openPrs,openIssues,repoLoc,dataMin,dataMax};
 }
 
 function render(raw){
   const offset=CUR_TZ;
-  const a=aggregate(raw,offset);
+  const a=aggregate(raw,offset,SELECTED_DATE);
   const sign=offset>=0?'+':'';
   const tzLabel=`UTC${sign}${offset}`;
 
@@ -274,19 +299,35 @@ function render(raw){
   const tNet=a.tAdd-a.tDel;
   const nowLocal=a.now;
   const todayDisplay=`${nowLocal.getUTCFullYear()}/${nowLocal.getUTCMonth()+1}/${nowLocal.getUTCDate()}（${WD[nowLocal.getUTCDay()]}）`;
+  // Selected day display (could be today or past)
+  const selParts=a.selectedDay.split('-').map(Number);
+  const selDate=new Date(Date.UTC(selParts[0],selParts[1]-1,selParts[2]));
+  const selDisplay=`${selParts[0]}/${selParts[1]}/${selParts[2]}（${WD[selDate.getUTCDay()]}）`;
+  const selShortDisplay=`${selParts[1]}/${selParts[2]}`;
   const peakDisplay=parseInt(a.peakDay.split('-')[1])+'/'+parseInt(a.peakDay.split('-')[2]);
   const numDays=a.dates.length;
   const pS=a.dates[0].split('-');const pE=a.dates[a.dates.length-1].split('-');
   const periodStr=`${pS[0]}/${pS[1]}/${pS[2]} 〜 ${parseInt(pE[1])}/${parseInt(pE[2])}（${numDays}日間）`;
   const updLocal=toLocal(raw.updated_at_utc,offset);
   const updStr=`${updLocal.getUTCFullYear()}/${updLocal.getUTCMonth()+1}/${updLocal.getUTCDate()} ${timeStr(updLocal)} ${tzLabel}`;
+  // Achievement labels
+  const achLabelEn=a.isToday?"Today's Achievement":"Day's Achievement";
+  const achLabelJp=a.isToday?'':'過去日表示中';
+  const hourlyTitle=a.isToday?'今日の時間帯別アクティビティ':`${selShortDisplay} の時間帯別アクティビティ`;
+  const commitLogTitle=a.isToday?'直近コミットログ':`${selShortDisplay} のコミットログ`;
 
   document.getElementById('dashboard').innerHTML=`
   <div class="hero">
     <div class="hero-top">
       <div>
-        <div class="hero-label">Today's Achievement</div>
-        <div class="hero-date">📅 ${todayDisplay} <span style="font-size:12px;color:var(--text3)">${tzLabel}</span></div>
+        <div class="hero-label">${achLabelEn}</div>
+        <div class="hero-date-row">
+          <button class="date-picker-btn" onclick="openDatePicker()" title="クリックで日付を選択">📅 ${selDisplay}</button>
+          <span style="font-size:12px;color:var(--text3)">${tzLabel}</span>
+          ${!a.isToday?`<button class="back-to-today" onclick="resetToToday()">今日に戻る</button>`:''}
+          ${!a.isToday?`<span class="past-day-banner">⏪ ${achLabelJp}</span>`:''}
+          <input type="date" id="dateInput" min="${a.dataMin}" max="${a.dataMax}" value="${a.selectedDay}" onchange="onDateChange(event)">
+        </div>
       </div>
       <div class="hero-badge">
         <span class="badge badge-streak">🔥 ${a.streak}日連続</span>
@@ -296,12 +337,12 @@ function render(raw){
     </div>
     <div class="hero-grid">
       <div class="hero-stat"><div class="num">${a.tCommits}</div><div class="label">Commits</div><div class="equiv">≈ エンジニア${(a.tCommits/5).toFixed(1)}人日</div></div>
-      <div class="hero-stat"><div class="num">${a.tPrs}</div><div class="label">Pull Requests</div><div class="pct">${a.openPrs>0?'Open '+a.openPrs+'件中 今日+'+a.tPrs+'件':'≈ エンジニア'+(a.tPrs/1).toFixed(1)+'人日'}</div></div>
-      <div class="hero-stat"><div class="num">+${tNet.toLocaleString()}</div><div class="label">Net Lines</div><div class="pct">${a.totalLoc>0?fmtLoc(a.totalLoc)+'行中 +'+pctStr(tNet,a.totalLoc):'≈ エンジニア'+(Math.max(tNet,0)/100).toFixed(1)+'人日'}</div></div>
-      <div class="hero-stat"><div class="num">${a.activeRepos}</div><div class="label">Active Repos</div><div class="pct">${a.openIssues>0?'Open Issue '+a.openIssues+'件':'&nbsp;'}</div></div>
+      <div class="hero-stat"><div class="num">${a.tPrs}</div><div class="label">Pull Requests</div><div class="pct">${a.isToday&&a.openPrs>0?'Open '+a.openPrs+'件中 今日+'+a.tPrs+'件':'≈ エンジニア'+(a.tPrs/1).toFixed(1)+'人日'}</div></div>
+      <div class="hero-stat"><div class="num">${tNet>=0?'+':''}${tNet.toLocaleString()}</div><div class="label">Net Lines</div><div class="pct">${a.totalLoc>0?fmtLoc(a.totalLoc)+'行中 '+pctStr(tNet,a.totalLoc):'≈ エンジニア'+(Math.max(tNet,0)/100).toFixed(1)+'人日'}${!a.isToday?'<span class="snapshot-note">※総行数は現時点</span>':''}</div></div>
+      <div class="hero-stat"><div class="num">${a.activeRepos}</div><div class="label">Active Repos</div><div class="pct">${a.isToday&&a.openIssues>0?'Open Issue '+a.openIssues+'件':'&nbsp;'}</div></div>
     </div>
     <div class="hero-sub-stats">
-      <span>📝 合計コード: ${fmtLoc(a.totalLoc)} 行（${a.activeRepos}リポジトリ）</span>
+      <span>📝 合計コード: ${fmtLoc(a.totalLoc)} 行（${Object.keys(a.repoLoc).length}リポジトリ）${!a.isToday?'<span class="snapshot-note">※現時点</span>':''}</span>
       <span>≈ エンジニア${(a.tCommits/5).toFixed(1)}人日分</span>
     </div>
     <div class="repo-delta-grid" id="repoDeltaGrid">
@@ -312,16 +353,16 @@ function render(raw){
 
   <div class="grid-today">
     <div class="card">
-      <h2><span class="icon">⏰</span> 今日の時間帯別アクティビティ <span style="font-size:11px;color:var(--text3)">${tzLabel}</span></h2>
-      <div class="legend">${hLegend||'<span style="color:var(--text3)">No commits today</span>'}</div>
+      <h2><span class="icon">⏰</span> ${hourlyTitle} <span style="font-size:11px;color:var(--text3)">${tzLabel}</span></h2>
+      <div class="legend">${hLegend||'<span style="color:var(--text3)">この日のコミットはありません</span>'}</div>
       <div class="chart-wrap h180"><canvas id="hourly"></canvas></div>
       <div class="sub-title">💻 時間帯別コード増減</div>
       <div class="legend"><span><span class="dot" style="background:rgba(34,197,94,0.6)"></span>追加</span><span><span class="dot" style="background:rgba(239,68,68,0.6)"></span>削除</span><span><span class="line-dot" style="background:#8b7cf7"></span>純増</span></div>
       <div class="chart-wrap h160"><canvas id="hourlyLines"></canvas></div>
     </div>
     <div class="card">
-      <h2><span class="icon">📋</span> 直近コミットログ</h2>
-      <div class="commit-list">${logHtml||'<div style="color:var(--text3);font-size:12px;padding:1rem">No commits yet today</div>'}</div>
+      <h2><span class="icon">📋</span> ${commitLogTitle}</h2>
+      <div class="commit-list">${logHtml||'<div style="color:var(--text3);font-size:12px;padding:1rem">この日のコミットはありません</div>'}</div>
     </div>
   </div>
 
@@ -413,6 +454,32 @@ function render(raw){
 }
 
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+// === 日付ピッカー ===
+function openDatePicker(){
+  const inp=document.getElementById('dateInput');
+  if(!inp)return;
+  try{
+    inp.showPicker();
+  }catch(e){
+    // Fallback for browsers without showPicker support
+    inp.focus();
+    inp.click();
+  }
+}
+function onDateChange(ev){
+  const v=ev.target.value;
+  if(!v)return;
+  // If selected is today, treat as null (live mode)
+  const now=toLocal(new Date().toISOString(),CUR_TZ);
+  const todayStr=dateStr(now);
+  SELECTED_DATE=(v===todayStr)?null:v;
+  if(RAW)render(RAW);
+}
+function resetToToday(){
+  SELECTED_DATE=null;
+  if(RAW)render(RAW);
+}
 
 let LAST_UPDATE='';
 

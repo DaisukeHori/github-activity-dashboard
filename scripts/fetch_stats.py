@@ -22,7 +22,8 @@ HEADERS = {
     "Accept": "application/vnd.github+json",
 }
 USERNAME = "DaisukeHori"
-LOOKBACK_DAYS = 14
+LOOKBACK_DAYS = 90
+PRUNE_DAYS = 100  # DBは表示窓より少し広めに保持
 OUTPUT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_PATH = os.path.join(OUTPUT_DIR, "commits_db.json")
 DATA_PATH = os.path.join(OUTPUT_DIR, "data.json")
@@ -193,8 +194,8 @@ def main():
     since_dt = now - timedelta(days=LOOKBACK_DAYS)
     since_iso = since_dt.strftime("%Y-%m-%dT00:00:00Z")
     since_date = since_dt.strftime("%Y-%m-%d")
-    # Keep DB entries for 30 days (wider than display window for safety)
-    prune_cutoff = (now - timedelta(days=30)).strftime("%Y-%m-%dT00:00:00Z")
+    # Keep DB entries slightly longer than display window for safety
+    prune_cutoff = (now - timedelta(days=PRUNE_DAYS)).strftime("%Y-%m-%dT00:00:00Z")
 
     print(f"=== GitHub Activity Dashboard v4 (Incremental) ===")
     print(f"Period: {since_date} ~ {now.strftime('%Y-%m-%d')}")
