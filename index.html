@@ -13,6 +13,16 @@
 body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 .container{max-width:1200px;margin:0 auto;padding:2rem}
 .tz-bar,.period-bar{display:flex;align-items:center;gap:10px;margin-bottom:1.2rem;flex-wrap:wrap}
+/* === タブナビゲーション === */
+.tab-bar{display:flex;gap:2px;margin-bottom:1.5rem;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.tab-bar::-webkit-scrollbar{display:none}
+.tab-btn{background:transparent;border:none;color:var(--text2);font-size:14px;font-weight:500;padding:12px 22px;cursor:pointer;font-family:inherit;border-bottom:2px solid transparent;transition:all .15s;margin-bottom:-1px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;letter-spacing:.5px}
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,0.02)}
+.tab-btn.active{color:var(--purple);border-bottom-color:var(--purple)}
+.tab-btn .tab-icon{font-size:16px}
+.tab-content{display:none}
+.tab-content.active{display:block;animation:fadeIn .25s ease-out}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 .tz-bar label,.period-bar label{font-size:12px;color:var(--text3);letter-spacing:1px;text-transform:uppercase}
 .tz-btn,.period-btn{background:var(--surface);border:1px solid var(--border);color:var(--text2);font-size:12px;padding:6px 14px;border-radius:20px;cursor:pointer;font-family:inherit;transition:all .15s}
 .tz-btn:hover{border-color:var(--purple);color:var(--text)}
@@ -169,6 +179,7 @@ function pctStr(delta,total){if(total<=0)return '—';const p=(delta/total*100);
 // === 状態 ===
 let RAW=null, CHARTS=[], CUR_TZ=9, SELECTED_DATE=null;
 let PERIOD_DAYS=14, PERIOD_RANGE=null;  // PERIOD_DAYS優先、PERIOD_RANGE={start,end}指定時はカスタム
+let CURRENT_TAB='daily';  // 'daily' | 'period' | 'monthly'
 
 const savedTz=localStorage.getItem('dashboard_tz');
 if(savedTz!==null) CUR_TZ=Number(savedTz);
@@ -176,6 +187,9 @@ const savedPeriod=localStorage.getItem('dashboard_period');
 if(savedPeriod!==null){
   try{const p=JSON.parse(savedPeriod);if(p.days){PERIOD_DAYS=p.days;PERIOD_RANGE=null}else if(p.range){PERIOD_DAYS=null;PERIOD_RANGE=p.range}}catch(e){}
 }
+// URL hash からタブ取得
+const hashTab=location.hash.slice(1);
+if(['daily','period','monthly'].includes(hashTab))CURRENT_TAB=hashTab;
 
 function highlightTZ(){
   document.querySelectorAll('.tz-btn').forEach(b=>{b.classList.toggle('active',Number(b.dataset.tz)===CUR_TZ)});
@@ -188,6 +202,32 @@ function tzName(offset){
   return map[String(offset)]||'UTC';
 }
 function setTZ(offset){CUR_TZ=offset;localStorage.setItem('dashboard_tz',String(offset));highlightTZ();if(RAW)render(RAW)}
+
+// === タブ切り替え ===
+function setTab(tab,options){
+  options=options||{};
+  if(!['daily','period','monthly'].includes(tab))tab='daily';
+  CURRENT_TAB=tab;
+  if(location.hash!=='#'+tab){
+    try{history.replaceState(null,'','#'+tab)}catch(e){location.hash=tab}
+  }
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.toggle('active',c.dataset.tab===tab));
+  // Chart.js: 表示されたタブの chart を resize (display:none で size 0 になるのを補正)
+  setTimeout(()=>{
+    CHARTS.forEach(c=>{
+      if(c.canvas&&c.canvas.offsetParent!==null){try{c.resize()}catch(e){}}
+    });
+  },50);
+  // ページトップへスクロール (ユーザー操作によるタブ切り替え時のみ)
+  if(!options.skipScroll){
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+}
+window.addEventListener('hashchange',()=>{
+  const t=location.hash.slice(1);
+  if(['daily','period','monthly'].includes(t)&&t!==CURRENT_TAB)setTab(t);
+});
 
 function highlightPeriod(){
   // active クラスは render() 内のテンプレートで直接付与するため、ここでは何もしない
@@ -670,6 +710,13 @@ function render(raw){
   }
 
   document.getElementById('dashboard').innerHTML=`
+  <nav class="tab-bar">
+    <button class="tab-btn${CURRENT_TAB==='daily'?' active':''}" data-tab="daily" onclick="setTab('daily')"><span class="tab-icon">📅</span>日別</button>
+    <button class="tab-btn${CURRENT_TAB==='period'?' active':''}" data-tab="period" onclick="setTab('period')"><span class="tab-icon">📊</span>期間別</button>
+    <button class="tab-btn${CURRENT_TAB==='monthly'?' active':''}" data-tab="monthly" onclick="setTab('monthly')"><span class="tab-icon">🗓️</span>月別</button>
+  </nav>
+
+  <div class="tab-content${CURRENT_TAB==='daily'?' active':''}" data-tab="daily">
   <div class="hero">
     <div class="hero-top">
       <div>
@@ -718,8 +765,10 @@ function render(raw){
       <div class="commit-list">${logHtml||'<div style="color:var(--text3);font-size:12px;padding:1rem">この日のコミットはありません</div>'}</div>
     </div>
   </div>
+  </div><!-- /tab-content daily -->
 
-  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin:24px 0 10px;flex-wrap:wrap;gap:8px">
+  <div class="tab-content${CURRENT_TAB==='period'?' active':''}" data-tab="period">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin:0 0 10px;flex-wrap:wrap;gap:8px">
     <div class="period-bar" style="margin-bottom:0">
       <label>📅 Period:</label>
       <button class="period-btn${PERIOD_DAYS===7?' active':''}" data-days="7" onclick="setPeriod(7)">1週間</button>
@@ -770,8 +819,10 @@ function render(raw){
       <div class="chart-wrap h220"><canvas id="c4"></canvas></div>
     </div>
   </div>
+  </div><!-- /tab-content period -->
 
-  <div class="monthly-section">
+  <div class="tab-content${CURRENT_TAB==='monthly'?' active':''}" data-tab="monthly">
+  <div class="monthly-section" style="margin-top:0">
     <div class="section-header">
       <h3>📅 月別アクティビティ（直近12ヶ月）</h3>
       <span class="desc">給与換算: ITエンジニア平均年収 550万円基準</span>
@@ -784,9 +835,16 @@ function render(raw){
     <div class="monthly-cards">${monthlyCardsHtml}</div>
     <div class="salary-note">※ 給与換算は、コミット数×5回=1人日の換算に、<a href="https://www.geekly.co.jp/column/cat-position/engineer-income-ranking/" target="_blank">ITエンジニア平均年収 550万円</a>（経産省・doda・厚労省の中間値）÷365日 ≒ 15,068円/日 を乗じた参考値。実際の労働時間や品質を反映するものではありません。</div>
   </div>
+  </div><!-- /tab-content monthly -->
 
   <div class="footer"><span id="autoRefresh" style="font-size:10px;color:var(--green);margin-right:12px">🔄 自動更新中</span>最終更新: ${updStr}　|　Powered by <a href="https://github.com/DaisukeHori/github-activity-dashboard">GitHub Actions</a></div>
   `;
+
+  // === Chart.js size 計算のため、全タブを一時的に active 化 ===
+  const dashboardEl=document.getElementById('dashboard');
+  const prevVisibility=dashboardEl.style.visibility;
+  dashboardEl.style.visibility='hidden';
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.add('active'));
 
   // === CHARTS ===
 
@@ -863,6 +921,11 @@ function render(raw){
       }
     }
   }));
+
+  // === タブ表示を確定 ===
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  setTab(CURRENT_TAB,{skipScroll:true});
+  dashboardEl.style.visibility=prevVisibility||'';
 }
 
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
