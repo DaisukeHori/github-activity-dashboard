@@ -489,16 +489,111 @@ def main():
     issues_list.sort(key=lambda x: x["created_at"], reverse=True)
 
     if commits_list:
-        since_utc = commits_list[-1]["utc"]
+        oldest_utc = commits_list[-1]["utc"]
     else:
-        since_utc = now.strftime("%Y-%m-%dT00:00:00Z")
+        oldest_utc = now.strftime("%Y-%m-%dT00:00:00Z")
+
+    # ---- 1年カットオフでアーカイブ分離 ----
+    print("\n[9.5] Splitting data.json (recent) / archive/YYYY.json (old)...")
+    one_year_ago = now - timedelta(days=365)
+    cutoff_iso = one_year_ago.strftime("%Y-%m-%dT%H:%M:%SZ")
+    print(f"  Cutoff: {cutoff_iso}")
+
+    # 直近1年と過去で分割
+    commits_recent = [c for c in commits_list if c["utc"] >= cutoff_iso]
+    commits_old = [c for c in commits_list if c["utc"] < cutoff_iso]
+    prs_recent = [p for p in prs_list if p["created_at"] >= cutoff_iso]
+    prs_old = [p for p in prs_list if p["created_at"] < cutoff_iso]
+    issues_recent = [i for i in issues_list if i["created_at"] >= cutoff_iso]
+    issues_old = [i for i in issues_list if i["created_at"] < cutoff_iso]
+    print(f"  Recent: {len(commits_recent)} commits, "
+          f"{len(prs_recent)} PRs, {len(issues_recent)} issues")
+    print(f"  Old (archive): {len(commits_old)} commits, "
+          f"{len(prs_old)} PRs, {len(issues_old)} issues")
+
+    # 年単位でグルーピング
+    archive_dir = os.path.join(OUTPUT_DIR, "archive")
+    os.makedirs(archive_dir, exist_ok=True)
+    archives_by_year = {}
+    for c in commits_old:
+        y = c["utc"][:4]
+        archives_by_year.setdefault(y, {"commits": [], "prs": [], "issues": []})["commits"].append(c)
+    for p in prs_old:
+        y = p["created_at"][:4]
+        archives_by_year.setdefault(y, {"commits": [], "prs": [], "issues": []})["prs"].append(p)
+    for i in issues_old:
+        y = i["created_at"][:4]
+        archives_by_year.setdefault(y, {"commits": [], "prs": [], "issues": []})["issues"].append(i)
+
+    # 既存 archive を読んで、変化のないものはそのまま (ファイル更新を最小化)
+    archive_meta = []
+    now_iso = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+    for year in sorted(archives_by_year.keys()):
+        year_data = archives_by_year[year]
+        year_data["commits"].sort(key=lambda x: x["utc"], reverse=True)
+        year_data["prs"].sort(key=lambda x: x["created_at"], reverse=True)
+        year_data["issues"].sort(key=lambda x: x["created_at"], reverse=True)
+        archive_path = os.path.join(archive_dir, f"{year}.json")
+        archive_payload = {
+            "year": int(year),
+            "generated_at_utc": now_iso,
+            "commits": year_data["commits"],
+            "prs": year_data["prs"],
+            "issues": year_data["issues"],
+        }
+        # 既存ファイルと比較 (timestamps を除く実コンテンツの差分)
+        write_needed = True
+        if os.path.exists(archive_path):
+            try:
+                with open(archive_path, "r") as f:
+                    existing = json.load(f)
+                if (len(existing.get("commits", [])) == len(year_data["commits"])
+                        and len(existing.get("prs", [])) == len(year_data["prs"])
+                        and len(existing.get("issues", [])) == len(year_data["issues"])):
+                    # コンテンツ同一とみなして書き換えスキップ
+                    write_needed = False
+            except Exception:
+                pass
+        if write_needed:
+            with open(archive_path, "w") as f:
+                json.dump(archive_payload, f, ensure_ascii=False,
+                          separators=(",", ":"))
+            size_kb = os.path.getsize(archive_path) // 1024
+            print(f"  archive/{year}.json: "
+                  f"{len(year_data['commits'])} commits, "
+                  f"{len(year_data['prs'])} PRs, "
+                  f"{len(year_data['issues'])} issues ({size_kb}KB) [updated]")
+        else:
+            size_kb = os.path.getsize(archive_path) // 1024
+            print(f"  archive/{year}.json: unchanged ({size_kb}KB) [skip]")
+        archive_meta.append({
+            "year": int(year),
+            "file": f"archive/{year}.json",
+            "commits": len(year_data["commits"]),
+            "prs": len(year_data["prs"]),
+            "issues": len(year_data["issues"]),
+        })
+
+    # since_utc は直近1年のオールデスト
+    if commits_recent:
+        since_utc = commits_recent[-1]["utc"]
+    else:
+        since_utc = cutoff_iso
+
+    # day_contributions も1年分に絞る (フロント側の月別カードは12ヶ月固定なので)
+    day_counts_full = streak.get("day_counts", {})
+    cutoff_date = cutoff_iso[:10]
+    day_counts_recent = {k: v for k, v in day_counts_full.items()
+                         if k >= cutoff_date}
 
     data = {
-        "updated_at_utc": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "updated_at_utc": now_iso,
         "since_utc": since_utc,
-        "commits": commits_list,
-        "prs": prs_list,
-        "issues": issues_list,
+        "cutoff_utc": cutoff_iso,
+        "commits": commits_recent,
+        "prs": prs_recent,
+        "issues": issues_recent,
+        "archives": archive_meta,
         "repo_loc": repo_loc,
         "total_loc": total_loc,
         "open_prs": open_prs,
@@ -513,15 +608,16 @@ def main():
             "first_contribution": streak.get("first_contribution"),
             "account_created_at": streak.get("account_created_at"),
         },
-        "day_contributions": streak.get("day_counts", {}),
+        "day_contributions": day_counts_recent,
     }
 
     with open(DATA_PATH, "w") as f:
         json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
     data_kb = os.path.getsize(DATA_PATH) // 1024
-    print(f"\n✅ data.json: {len(commits_list)} commits, "
-          f"{len(prs_list)} PRs, {len(issues_list)} issues "
-          f"({data_kb}KB)")
+    print(f"\n✅ data.json: {len(commits_recent)} commits, "
+          f"{len(prs_recent)} PRs, {len(issues_recent)} issues "
+          f"({data_kb}KB, 直近1年分)")
+    print(f"   archives: {len(archive_meta)} years")
 
 
 if __name__ == "__main__":

@@ -193,14 +193,106 @@ function setPeriod(days){
   localStorage.setItem('dashboard_period',JSON.stringify({days}));
   if(RAW)render(RAW);
 }
-function onCustomChange(){
+
+// === アーカイブ Lazy Fetch ===
+const ARCHIVE_CACHE = new Set();  // 既に読み込み済みの年
+
+async function ensureArchivesForRange(startDateStr){
+  if(!RAW||!RAW.archives||RAW.archives.length===0)return;
+  const startYear=parseInt(startDateStr.split('-')[0]);
+  // data.json の最古年
+  const dataMinYear=RAW.cutoff_utc?parseInt(RAW.cutoff_utc.slice(0,4)):new Date().getFullYear();
+  // 必要な archive (startYear 以降、dataMinYear 以前、未取得)
+  const needed=RAW.archives.filter(arch=>
+    arch.year>=startYear && arch.year<=dataMinYear && !ARCHIVE_CACHE.has(arch.year)
+  );
+  if(needed.length===0)return;
+
+  // ローディング表示
+  const periodBar=document.querySelector('.period-bar');
+  let loadingEl=null;
+  if(periodBar){
+    loadingEl=document.createElement('span');
+    loadingEl.id='archiveLoading';
+    loadingEl.style.cssText='color:var(--amber);font-size:11px;margin-left:8px;display:inline-flex;align-items:center;gap:4px';
+    loadingEl.innerHTML=`<span style="display:inline-block;width:10px;height:10px;border:2px solid rgba(245,158,11,0.3);border-top-color:var(--amber);border-radius:50%;animation:spin .8s linear infinite"></span>${needed.length}年分のアーカイブを読込中...`;
+    periodBar.appendChild(loadingEl);
+  }
+  // スピンアニメーション (なければ追加)
+  if(!document.getElementById('spinKeyframe')){
+    const st=document.createElement('style');st.id='spinKeyframe';
+    st.textContent='@keyframes spin{to{transform:rotate(360deg)}}';
+    document.head.appendChild(st);
+  }
+
+  try{
+    const fetched=await Promise.all(
+      needed.map(arch=>fetch(arch.file+'?t='+Date.now()).then(r=>{
+        if(!r.ok)throw new Error(`HTTP ${r.status}: ${arch.file}`);
+        return r.json();
+      }))
+    );
+
+    // RAW にマージ (重複排除)
+    const existingShas=new Set(RAW.commits.map(c=>c.sha));
+    const existingPrIds=new Set(RAW.prs.map(p=>p.id));
+    const existingIssueIds=new Set(RAW.issues.map(i=>i.id));
+
+    for(const arch of fetched){
+      for(const c of (arch.commits||[])){
+        if(!existingShas.has(c.sha)){
+          RAW.commits.push(c);
+          existingShas.add(c.sha);
+        }
+      }
+      for(const p of (arch.prs||[])){
+        if(!existingPrIds.has(p.id)){
+          RAW.prs.push(p);
+          existingPrIds.add(p.id);
+        }
+      }
+      for(const i of (arch.issues||[])){
+        if(!existingIssueIds.has(i.id)){
+          RAW.issues.push(i);
+          existingIssueIds.add(i.id);
+        }
+      }
+      ARCHIVE_CACHE.add(arch.year);
+    }
+
+    // ソート (新しい順)
+    RAW.commits.sort((a,b)=>b.utc.localeCompare(a.utc));
+    RAW.prs.sort((a,b)=>b.created_at.localeCompare(a.created_at));
+    RAW.issues.sort((a,b)=>b.created_at.localeCompare(a.created_at));
+    // since_utc を実最古に更新
+    if(RAW.commits.length){
+      const oldestUtc=RAW.commits[RAW.commits.length-1].utc;
+      if(oldestUtc<RAW.since_utc)RAW.since_utc=oldestUtc;
+    }
+    console.log(`[Archive] Loaded years: ${[...ARCHIVE_CACHE].join(', ')} | total commits: ${RAW.commits.length}`);
+  }catch(e){
+    console.error('[Archive] Fetch failed:',e);
+    if(periodBar){
+      const errEl=document.createElement('span');
+      errEl.style.cssText='color:var(--coral);font-size:11px;margin-left:8px';
+      errEl.textContent='⚠️ アーカイブ読込失敗';
+      periodBar.appendChild(errEl);
+      setTimeout(()=>errEl.remove(),4000);
+    }
+  }finally{
+    if(loadingEl)loadingEl.remove();
+  }
+}
+
+async function onCustomChange(){
   const s=document.getElementById('periodStart').value;
   const e=document.getElementById('periodEnd').value;
-  if(s&&e&&s<=e){
-    PERIOD_DAYS=null;PERIOD_RANGE={start:s,end:e};
-    localStorage.setItem('dashboard_period',JSON.stringify({range:PERIOD_RANGE}));
-    if(RAW)render(RAW);
-  }
+  if(!s||!e||s>e)return;
+  PERIOD_DAYS=null;PERIOD_RANGE={start:s,end:e};
+  localStorage.setItem('dashboard_period',JSON.stringify({range:PERIOD_RANGE}));
+  // 必要ならアーカイブをfetch
+  await ensureArchivesForRange(s);
+  if(RAW)render(RAW);
 }
 
 function toLocal(utcStr,offset){const d=new Date(utcStr);return new Date(d.getTime()+offset*3600000)}
@@ -352,8 +444,12 @@ function aggregate(raw,offset,selectedDayInput){
   const openIssues=raw.open_issues||0;
   const repoLoc=raw.repo_loc||{};
 
-  // Date picker range
-  const dataMin=raw.since_utc?raw.since_utc.slice(0,10):today;
+  // Date picker range (archive がある場合は最古年まで遡れるように)
+  let dataMin=raw.since_utc?raw.since_utc.slice(0,10):today;
+  if(raw.archives&&raw.archives.length>0){
+    const earliestYear=Math.min(...raw.archives.map(a=>a.year));
+    dataMin=`${earliestYear}-01-01`;
+  }
   const dataMax=today;
 
   return {
@@ -591,10 +687,11 @@ function render(raw){
       <button class="period-btn${PERIOD_DAYS===365?' active':''}" data-days="365" onclick="setPeriod(365)">1年</button>
       <span style="font-size:11px;color:var(--text3)">or</span>
       <div class="period-custom-range">
-        <input type="date" id="periodStart" value="${PERIOD_RANGE?PERIOD_RANGE.start:''}" onchange="onCustomChange()" title="開始日">
+        <input type="date" id="periodStart" value="${PERIOD_RANGE?PERIOD_RANGE.start:''}" min="${a.dataMin}" max="${a.dataMax}" onchange="onCustomChange()" title="開始日（archive期間も指定可能）">
         <span style="color:var(--text3)">〜</span>
-        <input type="date" id="periodEnd" value="${PERIOD_RANGE?PERIOD_RANGE.end:''}" onchange="onCustomChange()" title="終了日">
+        <input type="date" id="periodEnd" value="${PERIOD_RANGE?PERIOD_RANGE.end:''}" min="${a.dataMin}" max="${a.dataMax}" onchange="onCustomChange()" title="終了日">
       </div>
+      ${raw.archives&&raw.archives.length>0?`<span style="font-size:10px;color:var(--text3);margin-left:6px" title="${raw.archives.map(a2=>`${a2.year}年: ${a2.commits}commits/${a2.prs}PRs`).join(' | ')}">📦 archive: ${raw.archives.map(a2=>a2.year).join(', ')}</span>`:''}
     </div>
   </div>
   <div style="font-size:13px;color:var(--text3);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
