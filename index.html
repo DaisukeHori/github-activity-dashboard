@@ -12,23 +12,30 @@
 :root{--bg:#09090b;--surface:#18181b;--surface2:#27272a;--border:rgba(255,255,255,0.06);--text:#fafafa;--text2:#a1a1aa;--text3:#71717a;--purple:#8b7cf7;--green:#22c55e;--coral:#ef4444;--blue:#3b82f6;--amber:#f59e0b;--cyan:#06b6d4;--radius:16px;--radius-sm:10px}
 body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 .container{max-width:1200px;margin:0 auto;padding:2rem}
-.tz-bar{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap}
-.tz-bar label{font-size:12px;color:var(--text3);letter-spacing:1px;text-transform:uppercase}
-.tz-btn{background:var(--surface);border:1px solid var(--border);color:var(--text2);font-size:12px;padding:6px 14px;border-radius:20px;cursor:pointer;font-family:inherit;transition:all .15s}
+.tz-bar,.period-bar{display:flex;align-items:center;gap:10px;margin-bottom:1.2rem;flex-wrap:wrap}
+.tz-bar label,.period-bar label{font-size:12px;color:var(--text3);letter-spacing:1px;text-transform:uppercase}
+.tz-btn,.period-btn{background:var(--surface);border:1px solid var(--border);color:var(--text2);font-size:12px;padding:6px 14px;border-radius:20px;cursor:pointer;font-family:inherit;transition:all .15s}
 .tz-btn:hover{border-color:var(--purple);color:var(--text)}
 .tz-btn.active{background:var(--purple);color:#fff;border-color:var(--purple)}
+.period-btn:hover{border-color:var(--cyan);color:var(--text)}
+.period-btn.active{background:var(--cyan);color:#000;border-color:var(--cyan);font-weight:500}
 .tz-custom{background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:12px;padding:5px 10px;border-radius:10px;font-family:'JetBrains Mono',monospace;width:70px;text-align:center}
 .tz-custom:focus{outline:none;border-color:var(--purple)}
-.tz-display{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);margin-left:auto}
+.tz-display,.period-display{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);margin-left:auto}
+.period-custom-range{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);padding:4px 10px;border-radius:14px}
+.period-custom-range input{background:transparent;border:none;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;width:115px;cursor:pointer}
+.period-custom-range input:focus{outline:none}
+.period-custom-range input::-webkit-calendar-picker-indicator{filter:invert(0.6);cursor:pointer}
 .hero{background:linear-gradient(135deg,rgba(139,124,247,0.08),rgba(34,197,94,0.06));border:1px solid var(--border);border-radius:20px;padding:2.5rem;margin-bottom:1.5rem;position:relative;overflow:hidden}
 .hero::before{content:'';position:absolute;top:-50%;right:-20%;width:400px;height:400px;background:radial-gradient(circle,rgba(139,124,247,0.08),transparent 70%);pointer-events:none}
 .hero-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:12px}
 .hero-label{font-size:13px;color:var(--text3);letter-spacing:2px;text-transform:uppercase}
 .hero-date{font-size:15px;font-weight:500;color:var(--text2)}
-.hero-badge{display:flex;align-items:center;gap:8px}
+.hero-badge{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .badge{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:500}
 .badge-auto{background:rgba(34,197,94,0.15);color:var(--green)}
-.badge-streak{background:rgba(245,158,11,0.15);color:var(--amber)}
+.badge-streak{background:rgba(245,158,11,0.15);color:var(--amber);display:inline-flex;align-items:center;gap:4px}
+.badge-streak .sub{font-size:9px;color:var(--text3);font-weight:400}
 .hero-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
 .hero-stat{text-align:center}
 .hero-stat .num{font-family:'JetBrains Mono',monospace;font-size:48px;font-weight:700;line-height:1;margin-bottom:4px;background:linear-gradient(135deg,var(--purple),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -36,6 +43,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .hero-stat:nth-child(3) .num{background:linear-gradient(135deg,var(--amber),var(--coral));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .hero-stat:nth-child(4) .num{background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .hero-stat .pct{font-size:10px;color:var(--cyan);margin-top:4px;font-weight:400;opacity:.9}
+.hero-stat .equiv{font-size:11px;color:var(--amber);margin-top:4px;font-weight:400;opacity:.85}
+.hero-stat .label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
 .hero-sub-stats{display:flex;gap:24px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);flex-wrap:wrap}
 .repo-delta-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:12px}
 .repo-delta{background:rgba(255,255,255,0.03);border-radius:8px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;font-size:11px}
@@ -46,7 +55,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .rpct.up{color:var(--green)}.rpct.down{color:var(--coral)}.rpct.zero{color:var(--text3)}
 .bench-note{font-size:10px;color:var(--text3);margin-top:16px;text-align:right;opacity:.7}
 .bench-note a{text-decoration:none}
-.hero-stat .equiv{font-size:11px;color:var(--amber);margin-top:4px;font-weight:400;opacity:.85}
 /* === 日付ピッカー === */
 .hero-date-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .date-picker-btn{background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--text);font-size:15px;font-weight:500;padding:6px 12px;border-radius:10px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all .15s;position:relative}
@@ -58,9 +66,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .past-day-banner{display:inline-flex;align-items:center;gap:6px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);color:var(--amber);font-size:11px;padding:4px 10px;border-radius:14px;margin-left:6px}
 .snapshot-note{font-size:10px;color:var(--text3);opacity:.75;margin-left:4px}
 #dateInput{position:absolute;opacity:0;pointer-events:none;width:0;height:0;left:0;top:0}
-/* date input picker indicator (in case fallback is needed) */
 #dateInput::-webkit-calendar-picker-indicator{cursor:pointer}
-.hero-stat .label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
 .num{animation:fadeUp .6s ease-out both}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .hero-stat:nth-child(2) .num{animation-delay:.1s}
@@ -72,12 +78,12 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .card h2{font-size:14px;font-weight:500;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .card h2 .icon{font-size:16px}
 .chart-wrap{position:relative;width:100%}
-.h180{height:180px}.h220{height:220px}.h160{height:160px}
+.h180{height:180px}.h220{height:220px}.h160{height:160px}.h280{height:280px}
 .summary-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
 .summary-item{background:var(--surface);border-radius:var(--radius-sm);padding:1rem;border:1px solid var(--border);text-align:center}
 .summary-item .val{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:600}
 .summary-item .lbl{font-size:11px;color:var(--text3);margin-top:2px}
-.c-purple{color:var(--purple)}.c-green{color:var(--green)}.c-coral{color:var(--coral)}.c-blue{color:var(--blue)}
+.c-purple{color:var(--purple)}.c-green{color:var(--green)}.c-coral{color:var(--coral)}.c-blue{color:var(--blue)}.c-amber{color:var(--amber)}.c-cyan{color:var(--cyan)}
 .commit-list{max-height:380px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--surface2) transparent}
 .commit-item{display:grid;grid-template-columns:80px 100px 1fr 50px;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);align-items:center;font-size:12px}
 .commit-item:last-child{border-bottom:none}
@@ -93,7 +99,33 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .footer a{color:var(--purple);text-decoration:none}
 .loading{text-align:center;padding:4rem;color:var(--text3);font-size:14px}
 .sub-title{font-size:12px;color:var(--text3);margin-top:16px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
-@media(max-width:768px){.container{padding:1rem}.hero-grid{grid-template-columns:repeat(2,1fr);gap:12px}.hero-stat .num{font-size:36px}.grid-2,.grid-today,.summary-bar{grid-template-columns:1fr}.commit-item{grid-template-columns:70px 80px 1fr 40px}}
+/* === 月別セクション === */
+.monthly-section{margin-top:32px}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.section-header h3{font-size:16px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:8px}
+.section-header .desc{font-size:11px;color:var(--text3)}
+.monthly-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.monthly-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1.1rem 1.25rem;transition:all .15s;position:relative;overflow:hidden}
+.monthly-card:hover{border-color:rgba(139,124,247,0.3);transform:translateY(-1px)}
+.monthly-card.current{border-color:rgba(34,197,94,0.4);background:linear-gradient(135deg,rgba(34,197,94,0.05),transparent 60%)}
+.month-label{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text2);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.month-label .month-tag{font-size:9px;background:rgba(34,197,94,0.15);color:var(--green);padding:2px 6px;border-radius:8px;font-weight:500}
+.month-salary{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;background:linear-gradient(135deg,var(--amber),var(--coral));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:2px;line-height:1.2}
+.month-persondays{font-size:11px;color:var(--amber);margin-bottom:12px;opacity:.9}
+.month-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px 14px;font-size:11px;padding-top:10px;border-top:1px solid var(--border)}
+.month-grid .item{display:flex;justify-content:space-between;align-items:baseline;padding:2px 0}
+.month-grid .item .k{color:var(--text3);font-size:10px}
+.month-grid .item .v{color:var(--text);font-family:'JetBrains Mono',monospace;font-weight:500;font-size:12px}
+.month-grid .item .v.green{color:var(--green)}
+.month-grid .item .v.purple{color:var(--purple)}
+.month-grid .item .v.blue{color:var(--blue)}
+.month-grid .item .v.coral{color:var(--coral)}
+.month-grid .item .v.cyan{color:var(--cyan)}
+.salary-note{font-size:10px;color:var(--text3);margin-top:10px;text-align:right;opacity:.75}
+.salary-note a{color:var(--cyan);text-decoration:none}
+.no-data-month{opacity:.4}
+.no-data-month .month-salary{background:linear-gradient(135deg,var(--text3),var(--text3));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+@media(max-width:768px){.container{padding:1rem}.hero-grid{grid-template-columns:repeat(2,1fr);gap:12px}.hero-stat .num{font-size:36px}.grid-2,.grid-today,.summary-bar{grid-template-columns:1fr}.commit-item{grid-template-columns:70px 80px 1fr 40px}.monthly-cards{grid-template-columns:1fr}.period-custom-range input{width:95px}}
 </style>
 </head>
 <body>
@@ -110,6 +142,22 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <input type="number" class="tz-custom" id="tzCustom" min="-12" max="14" step="1" placeholder="±hrs" onchange="setTZ(Number(this.value))">
     <span class="tz-display" id="tzDisplay"></span>
   </div>
+  <div class="period-bar">
+    <label>📅 Period:</label>
+    <button class="period-btn" data-days="7" onclick="setPeriod(7)">1週間</button>
+    <button class="period-btn" data-days="14" onclick="setPeriod(14)">2週間</button>
+    <button class="period-btn" data-days="30" onclick="setPeriod(30)">1ヶ月</button>
+    <button class="period-btn" data-days="90" onclick="setPeriod(90)">3ヶ月</button>
+    <button class="period-btn" data-days="180" onclick="setPeriod(180)">6ヶ月</button>
+    <button class="period-btn" data-days="365" onclick="setPeriod(365)">1年</button>
+    <span style="font-size:11px;color:var(--text3)">or</span>
+    <div class="period-custom-range">
+      <input type="date" id="periodStart" onchange="onCustomChange()" title="開始日">
+      <span style="color:var(--text3)">〜</span>
+      <input type="date" id="periodEnd" onchange="onCustomChange()" title="終了日">
+    </div>
+    <span class="period-display" id="periodDisplay"></span>
+  </div>
   <div id="dashboard"><div class="loading">⏳ Loading data...</div></div>
 </div>
 
@@ -118,11 +166,93 @@ Chart.defaults.font.family="'Noto Sans JP',sans-serif";
 Chart.defaults.color='#71717a';
 const G='rgba(255,255,255,0.04)',TC='#52525b';
 const TT={backgroundColor:'#27272a',titleColor:'#fafafa',bodyColor:'#a1a1aa',borderColor:'rgba(255,255,255,0.08)',borderWidth:1,padding:10,cornerRadius:8};
+const PALETTE=["#8b7cf7","#34d399","#fbbf24","#f97066","#60a5fa","#c084fc","#fb923c","#a78bfa","#38bdf8","#4ade80","#e879f9","#f472b6"];
+
+// === 給与換算ベース ===
+// ITエンジニア平均年収: 約550万円 (複数ソース中間値: doda 462万・経産省550万・厚労省738万の中間)
+const SALARY_ANNUAL = 5500000;
+const SALARY_PER_DAY = SALARY_ANNUAL / 365;  // 約15,068 円/日
+
 function fmtLoc(n){if(n>=1000000)return (n/1000000).toFixed(1)+'M';if(n>=1000)return (n/1000).toFixed(1)+'K';return String(n)}
+function fmtYen(n){if(n>=100000000)return '¥'+(n/100000000).toFixed(2)+'億';if(n>=10000000)return '¥'+(n/10000000).toFixed(2)+'千万';if(n>=10000)return '¥'+(n/10000).toFixed(1)+'万';return '¥'+Math.round(n).toLocaleString()}
 function pctStr(delta,total){if(total<=0)return '—';const p=(delta/total*100);return (p>=0?'+':'')+p.toFixed(2)+'%'}
+
+// === 状態 ===
+let RAW=null, CHARTS=[], CUR_TZ=9, SELECTED_DATE=null;
+let PERIOD_DAYS=14, PERIOD_RANGE=null;  // PERIOD_DAYS優先、PERIOD_RANGE={start,end}指定時はカスタム
+
+const savedTz=localStorage.getItem('dashboard_tz');
+if(savedTz!==null) CUR_TZ=Number(savedTz);
+const savedPeriod=localStorage.getItem('dashboard_period');
+if(savedPeriod!==null){
+  try{const p=JSON.parse(savedPeriod);if(p.days){PERIOD_DAYS=p.days;PERIOD_RANGE=null}else if(p.range){PERIOD_DAYS=null;PERIOD_RANGE=p.range}}catch(e){}
+}
+
+function highlightTZ(){
+  document.querySelectorAll('.tz-btn').forEach(b=>{b.classList.toggle('active',Number(b.dataset.tz)===CUR_TZ)});
+  const sign=CUR_TZ>=0?'+':'';
+  document.getElementById('tzDisplay').textContent=`UTC${sign}${CUR_TZ} — ${new Date().toLocaleString('ja-JP',{timeZone:tzName(CUR_TZ),hour:'2-digit',minute:'2-digit'})} now`;
+  document.getElementById('tzCustom').value=CUR_TZ;
+}
+function tzName(offset){
+  const map={9:'Asia/Tokyo',0:'UTC','-5':'America/New_York','-8':'America/Los_Angeles',8:'Asia/Shanghai',1:'Europe/Berlin'};
+  return map[String(offset)]||'UTC';
+}
+function setTZ(offset){CUR_TZ=offset;localStorage.setItem('dashboard_tz',String(offset));highlightTZ();if(RAW)render(RAW)}
+
+function highlightPeriod(){
+  document.querySelectorAll('.period-btn').forEach(b=>{b.classList.toggle('active',PERIOD_DAYS!==null&&Number(b.dataset.days)===PERIOD_DAYS)});
+  let displayText='';
+  if(PERIOD_DAYS){
+    displayText=`直近 ${PERIOD_DAYS} 日`;
+  }else if(PERIOD_RANGE){
+    displayText=`${PERIOD_RANGE.start} 〜 ${PERIOD_RANGE.end}`;
+  }
+  document.getElementById('periodDisplay').textContent=displayText;
+}
+function setPeriod(days){
+  PERIOD_DAYS=days;PERIOD_RANGE=null;
+  localStorage.setItem('dashboard_period',JSON.stringify({days}));
+  // Clear custom range inputs
+  document.getElementById('periodStart').value='';
+  document.getElementById('periodEnd').value='';
+  highlightPeriod();if(RAW)render(RAW);
+}
+function onCustomChange(){
+  const s=document.getElementById('periodStart').value;
+  const e=document.getElementById('periodEnd').value;
+  if(s&&e&&s<=e){
+    PERIOD_DAYS=null;PERIOD_RANGE={start:s,end:e};
+    localStorage.setItem('dashboard_period',JSON.stringify({range:PERIOD_RANGE}));
+    highlightPeriod();if(RAW)render(RAW);
+  }
+}
+
+function toLocal(utcStr,offset){const d=new Date(utcStr);return new Date(d.getTime()+offset*3600000)}
+function dateStr(d){return d.getFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0')}
+function shortDate(d){return(d.getUTCMonth()+1)+'/'+d.getUTCDate()}
+function timeStr(d){return String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0')}
+const WD=['日','月','火','水','木','金','土'];
+
+// === 期間取得 ===
+function getPeriodDates(now){
+  const dates=[];
+  if(PERIOD_RANGE){
+    const sParts=PERIOD_RANGE.start.split('-').map(Number);
+    const eParts=PERIOD_RANGE.end.split('-').map(Number);
+    let d=new Date(Date.UTC(sParts[0],sParts[1]-1,sParts[2]));
+    const eD=new Date(Date.UTC(eParts[0],eParts[1]-1,eParts[2]));
+    while(d<=eD){dates.push(dateStr(d));d=new Date(d.getTime()+86400000)}
+  }else{
+    const days=PERIOD_DAYS||14;
+    const endD=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()));
+    for(let i=days-1;i>=0;i--){const d=new Date(endD.getTime()-i*86400000);dates.push(dateStr(d))}
+  }
+  return dates;
+}
+
 function buildRepoDeltaHTML(a){
   if(!a.repoLoc||Object.keys(a.repoLoc).length===0)return '';
-  // Calc selected day's add/del per repo
   const dayByRepo={};
   if(RAW&&RAW.commits){
     for(const c of RAW.commits){
@@ -144,57 +274,39 @@ function buildRepoDeltaHTML(a){
     return '<div class="repo-delta"><span class="rname">'+esc(repo)+'</span><span class="rstat"><span class="rloc">'+fmtLoc(loc)+'</span><span class="rpct '+cls+'">'+sign+pct.toFixed(2)+'%</span></span></div>';
   }).join('');
 }
-const PALETTE=["#8b7cf7","#34d399","#fbbf24","#f97066","#60a5fa","#c084fc","#fb923c","#a78bfa","#38bdf8","#4ade80","#e879f9","#f472b6"];
 
-let RAW=null, CHARTS=[], CUR_TZ=9, SELECTED_DATE=null;
-const saved=localStorage.getItem('dashboard_tz');
-if(saved!==null) CUR_TZ=Number(saved);
-
-function highlightTZ(){
-  document.querySelectorAll('.tz-btn').forEach(b=>{b.classList.toggle('active',Number(b.dataset.tz)===CUR_TZ)});
-  const sign=CUR_TZ>=0?'+':'';
-  document.getElementById('tzDisplay').textContent=`UTC${sign}${CUR_TZ} — ${new Date().toLocaleString('ja-JP',{timeZone:tzName(CUR_TZ),hour:'2-digit',minute:'2-digit'})} now`;
-  document.getElementById('tzCustom').value=CUR_TZ;
-}
-function tzName(offset){
-  const map={9:'Asia/Tokyo',0:'UTC','-5':'America/New_York','-8':'America/Los_Angeles',8:'Asia/Shanghai',1:'Europe/Berlin'};
-  return map[String(offset)]||'UTC';
-}
-function setTZ(offset){CUR_TZ=offset;localStorage.setItem('dashboard_tz',String(offset));highlightTZ();if(RAW)render(RAW)}
-function toLocal(utcStr,offset){const d=new Date(utcStr);return new Date(d.getTime()+offset*3600000)}
-function dateStr(d){return d.getFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0')}
-function shortDate(d){return(d.getUTCMonth()+1)+'/'+d.getUTCDate()}
-function timeStr(d){return String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0')}
-const WD=['日','月','火','水','木','金','土'];
-
+// === 集計関数 ===
 function aggregate(raw,offset,selectedDayInput){
   const now=toLocal(new Date().toISOString(),offset);
   const today=dateStr(now);
   const selectedDay=selectedDayInput||today;
   const isToday=selectedDay===today;
-  const sinceLocal=toLocal(raw.since_utc,offset);
-  const dates=[];
-  let d=new Date(Date.UTC(sinceLocal.getUTCFullYear(),sinceLocal.getUTCMonth(),sinceLocal.getUTCDate()));
-  const endD=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()));
-  while(d<=endD){dates.push(dateStr(d));d=new Date(d.getTime()+86400000)}
 
-  const daily={commits:{},prs:{},issues:{},add:{},del:{}};
-  const repoCount={};
-  const commitsByDay={};  // ds -> [commit display obj]
+  // 期間サマリー用の日付配列
+  const periodDates=getPeriodDates(now);
+  const periodDateSet=new Set(periodDates);
 
-  // Hourly by repo + hourly lines (selected day only)
-  const hourlyByRepo={};  // repo -> {h: count}
-  const hourlyAdd={};     // h -> total additions
-  const hourlyDel={};     // h -> total deletions
+  // 全期間日別集計
+  const daily={commits:{},prs:{},mergedPrs:{},issues:{},closedIssues:{},add:{},del:{}};
+  const periodRepoCount={};  // 期間内のみ
+  const commitsByDay={};
+
+  // 選択日用
+  const hourlyByRepo={};
+  const hourlyAdd={};
+  const hourlyDel={};
   const dayRepos=new Set();
 
+  // === Commits ===
   for(const c of raw.commits){
     const loc=toLocal(c.utc,offset);
     const ds=dateStr(loc);
     daily.commits[ds]=(daily.commits[ds]||0)+1;
     daily.add[ds]=(daily.add[ds]||0)+c.add;
     daily.del[ds]=(daily.del[ds]||0)+c.del;
-    repoCount[c.repo]=(repoCount[c.repo]||0)+1;
+    if(periodDateSet.has(ds)){
+      periodRepoCount[c.repo]=(periodRepoCount[c.repo]||0)+1;
+    }
     if(ds===selectedDay){
       const h=loc.getUTCHours();
       dayRepos.add(c.repo);
@@ -207,47 +319,137 @@ function aggregate(raw,offset,selectedDayInput){
     commitsByDay[ds].push({repo:c.repo,msg:c.msg,sha:c.sha,add:c.add,del:c.del,localDate:shortDate(loc),localTime:timeStr(loc),sortKey:c.utc});
   }
 
-  for(const utc of raw.prs){const loc=toLocal(utc,offset);const ds=dateStr(loc);daily.prs[ds]=(daily.prs[ds]||0)+1}
-  for(const utc of raw.issues){const loc=toLocal(utc,offset);const ds=dateStr(loc);daily.issues[ds]=(daily.issues[ds]||0)+1}
-
-  // Streak from today backwards (independent of selected day)
-  let streak=0;
-  for(let i=dates.length-1;i>=0;i--){
-    if(dates[i]>today)continue;
-    if((daily.commits[dates[i]]||0)>0)streak++;else break;
+  // === PRs (新フォーマット: オブジェクト配列) ===
+  for(const p of raw.prs){
+    const utc=p.created_at||p;  // 互換性
+    const loc=toLocal(utc,offset);
+    const ds=dateStr(loc);
+    daily.prs[ds]=(daily.prs[ds]||0)+1;
+    if(p.merged_at){
+      const mloc=toLocal(p.merged_at,offset);
+      const mds=dateStr(mloc);
+      daily.mergedPrs[mds]=(daily.mergedPrs[mds]||0)+1;
+    }
   }
 
-  // Display commits for the selected day (sorted desc)
+  // === Issues ===
+  for(const i of raw.issues){
+    const utc=i.created_at||i;
+    const loc=toLocal(utc,offset);
+    const ds=dateStr(loc);
+    daily.issues[ds]=(daily.issues[ds]||0)+1;
+    if(i.closed_at){
+      const cloc=toLocal(i.closed_at,offset);
+      const cds=dateStr(cloc);
+      daily.closedIssues[cds]=(daily.closedIssues[cds]||0)+1;
+    }
+  }
+
+  // === Streak (server-provided, true value) ===
+  const streak=raw.streak||{};
+  const currentStreak=streak.current_streak||0;
+  const longestStreak=streak.longest_streak||0;
+  const totalContributions=streak.total_contributions||0;
+
+  // === 選択日のコミットログ ===
   const displayCommits=(commitsByDay[selectedDay]||[]).slice().sort((a,b)=>b.sortKey.localeCompare(a.sortKey));
 
   const tCommits=daily.commits[selectedDay]||0;
   const tPrs=daily.prs[selectedDay]||0;
+  const tMergedPrs=daily.mergedPrs[selectedDay]||0;
   const tIssues=daily.issues[selectedDay]||0;
   const tAdd=daily.add[selectedDay]||0;
   const tDel=daily.del[selectedDay]||0;
-  const activeRepos=Object.keys(repoCount).length;
 
-  let peakDay=dates[0],peakCount=0;
-  for(const d of dates){const v=daily.commits[d]||0;if(v>peakCount){peakCount=v;peakDay=d}}
+  // === ピーク (期間内) ===
+  let peakDay=periodDates[0],peakCount=0;
+  for(const d of periodDates){const v=daily.commits[d]||0;if(v>peakCount){peakCount=v;peakDay=d}}
+  const activeReposInPeriod=Object.keys(periodRepoCount).length;
 
-  // Sort selected day's repos by commit count
   const dayReposSorted=[...dayRepos].sort((a,b)=>{
     const ca=Object.values(hourlyByRepo[a]||{}).reduce((s,v)=>s+v,0);
     const cb=Object.values(hourlyByRepo[b]||{}).reduce((s,v)=>s+v,0);
     return cb-ca;
   });
 
-  // Totals from server data (snapshot - always "current")
   const totalLoc=raw.total_loc||0;
   const openPrs=raw.open_prs||0;
   const openIssues=raw.open_issues||0;
   const repoLoc=raw.repo_loc||{};
 
-  // Min/Max for date picker (data range)
-  const dataMin=dates[0]||today;
+  // Date picker range
+  const dataMin=raw.since_utc?raw.since_utc.slice(0,10):today;
   const dataMax=today;
 
-  return {dates,daily,hourlyByRepo,hourlyAdd,hourlyDel,todayReposSorted:dayReposSorted,repoCount,streak,today,selectedDay,isToday,tCommits,tPrs,tIssues,tAdd,tDel,activeRepos,top20:displayCommits,peakDay,peakCount,now,totalLoc,openPrs,openIssues,repoLoc,dataMin,dataMax};
+  return {
+    periodDates,periodDateSet,daily,hourlyByRepo,hourlyAdd,hourlyDel,
+    todayReposSorted:dayReposSorted,periodRepoCount,
+    currentStreak,longestStreak,totalContributions,
+    today,selectedDay,isToday,
+    tCommits,tPrs,tMergedPrs,tIssues,tAdd,tDel,
+    activeRepos:activeReposInPeriod,top20:displayCommits,
+    peakDay,peakCount,now,totalLoc,openPrs,openIssues,repoLoc,
+    dataMin,dataMax,
+  };
+}
+
+// === 月別集計 (直近12ヶ月) ===
+function aggregateMonthly(raw,offset){
+  const monthly={};  // "YYYY-MM" -> stats
+  function key(loc){return loc.getUTCFullYear()+'-'+String(loc.getUTCMonth()+1).padStart(2,'0')}
+  function ensure(ym){
+    if(!monthly[ym])monthly[ym]={commits:0,prs:0,mergedPrs:0,issues:0,closedIssues:0,add:0,del:0,repos:new Set()};
+    return monthly[ym];
+  }
+  for(const c of raw.commits){
+    const loc=toLocal(c.utc,offset);
+    const m=ensure(key(loc));
+    m.commits++;m.add+=c.add;m.del+=c.del;m.repos.add(c.repo);
+  }
+  for(const p of raw.prs){
+    const utc=p.created_at||p;
+    const loc=toLocal(utc,offset);
+    const m=ensure(key(loc));
+    m.prs++;
+    if(p.merged_at){
+      const mloc=toLocal(p.merged_at,offset);
+      const mm=ensure(key(mloc));
+      mm.mergedPrs++;
+    }
+  }
+  for(const i of raw.issues){
+    const utc=i.created_at||i;
+    const loc=toLocal(utc,offset);
+    const m=ensure(key(loc));
+    m.issues++;
+    if(i.closed_at){
+      const cloc=toLocal(i.closed_at,offset);
+      const mm=ensure(key(cloc));
+      mm.closedIssues++;
+    }
+  }
+  // 直近12ヶ月分の配列を返す
+  const now=toLocal(new Date().toISOString(),offset);
+  const months=[];
+  for(let i=11;i>=0;i--){
+    const d=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth()-i,1));
+    const ym=key(d);
+    const stats=monthly[ym]||{commits:0,prs:0,mergedPrs:0,issues:0,closedIssues:0,add:0,del:0,repos:new Set()};
+    const net=stats.add-stats.del;
+    // 人日換算: コミット数/5を主指標
+    const personDays=stats.commits/5;
+    const salary=personDays*SALARY_PER_DAY;
+    months.push({
+      ym,year:d.getUTCFullYear(),month:d.getUTCMonth()+1,
+      commits:stats.commits,prs:stats.prs,mergedPrs:stats.mergedPrs,
+      issues:stats.issues,closedIssues:stats.closedIssues,
+      add:stats.add,del:stats.del,net,
+      activeRepos:stats.repos.size,
+      personDays,salary,
+      isCurrent:i===0,
+    });
+  }
+  return months;
 }
 
 function render(raw){
@@ -255,15 +457,17 @@ function render(raw){
   const a=aggregate(raw,offset,SELECTED_DATE);
   const sign=offset>=0?'+':'';
   const tzLabel=`UTC${sign}${offset}`;
+  const monthly=aggregateMonthly(raw,offset);
 
   CHARTS.forEach(c=>c.destroy());CHARTS=[];
 
-  const labels=a.dates.map(d=>{const p=d.split('-');return parseInt(p[1])+'/'+parseInt(p[2])});
-  const cmArr=a.dates.map(d=>a.daily.commits[d]||0);
-  const prArr=a.dates.map(d=>a.daily.prs[d]||0);
-  const isArr=a.dates.map(d=>a.daily.issues[d]||0);
-  const adArr=a.dates.map(d=>a.daily.add[d]||0);
-  const dlArr=a.dates.map(d=>a.daily.del[d]||0);
+  // === 期間サマリー用配列 ===
+  const labels=a.periodDates.map(d=>{const p=d.split('-');return parseInt(p[1])+'/'+parseInt(p[2])});
+  const cmArr=a.periodDates.map(d=>a.daily.commits[d]||0);
+  const prArr=a.periodDates.map(d=>a.daily.prs[d]||0);
+  const isArr=a.periodDates.map(d=>a.daily.issues[d]||0);
+  const adArr=a.periodDates.map(d=>a.daily.add[d]||0);
+  const dlArr=a.periodDates.map(d=>a.daily.del[d]||0);
   const ntArr=adArr.map((v,i)=>v-dlArr[i]);
   const cumArr=[];ntArr.reduce((acc,v,i)=>{cumArr[i]=acc+v;return cumArr[i]},0);
 
@@ -274,21 +478,21 @@ function render(raw){
   const totalDel=dlArr.reduce((s,v)=>s+v,0);
   const totalNet=totalAdd-totalDel;
 
-  const sortedRepos=Object.entries(a.repoCount).sort((x,y)=>y[1]-x[1]);
+  const sortedRepos=Object.entries(a.periodRepoCount).sort((x,y)=>y[1]-x[1]);
   const hLabels=Array.from({length:24},(_,i)=>String(i).padStart(2,'0'));
 
-  // Build stacked hourly datasets per repo
+  // 期間内のラベル軸調整（長期間は週/月ラベル化）
+  const periodLabelMode=a.periodDates.length<=31?'day':a.periodDates.length<=120?'week':'month';
+  const xTicksConfig={color:TC,font:{size:10},autoSkip:true,maxRotation:0,
+    maxTicksLimit:periodLabelMode==='day'?20:periodLabelMode==='week'?15:12};
+
   const hourlyDatasets=a.todayReposSorted.map((repo,idx)=>{
     const data=Array.from({length:24},(_,h)=>(a.hourlyByRepo[repo]||{})[h]||0);
     return {label:repo,data,backgroundColor:PALETTE[idx%PALETTE.length],borderRadius:idx===0?{topLeft:3,topRight:3}:0,barPercentage:.7};
   });
-
-  // Hourly lines data
   const hAddArr=Array.from({length:24},(_,h)=>a.hourlyAdd[h]||0);
   const hDelArr=Array.from({length:24},(_,h)=>a.hourlyDel[h]||0);
   const hNetArr=hAddArr.map((v,i)=>v-hDelArr[i]);
-
-  // Hourly legend HTML
   let hLegend=a.todayReposSorted.map((repo,i)=>`<span><span class="dot" style="background:${PALETTE[i%PALETTE.length]}"></span>${esc(repo)}</span>`).join('');
 
   let logHtml='';
@@ -299,22 +503,57 @@ function render(raw){
   const tNet=a.tAdd-a.tDel;
   const nowLocal=a.now;
   const todayDisplay=`${nowLocal.getUTCFullYear()}/${nowLocal.getUTCMonth()+1}/${nowLocal.getUTCDate()}（${WD[nowLocal.getUTCDay()]}）`;
-  // Selected day display (could be today or past)
   const selParts=a.selectedDay.split('-').map(Number);
   const selDate=new Date(Date.UTC(selParts[0],selParts[1]-1,selParts[2]));
   const selDisplay=`${selParts[0]}/${selParts[1]}/${selParts[2]}（${WD[selDate.getUTCDay()]}）`;
   const selShortDisplay=`${selParts[1]}/${selParts[2]}`;
-  const peakDisplay=parseInt(a.peakDay.split('-')[1])+'/'+parseInt(a.peakDay.split('-')[2]);
-  const numDays=a.dates.length;
-  const pS=a.dates[0].split('-');const pE=a.dates[a.dates.length-1].split('-');
-  const periodStr=`${pS[0]}/${pS[1]}/${pS[2]} 〜 ${parseInt(pE[1])}/${parseInt(pE[2])}（${numDays}日間）`;
+  const peakDisplay=a.peakDay?parseInt(a.peakDay.split('-')[1])+'/'+parseInt(a.peakDay.split('-')[2]):'—';
+  const numDays=a.periodDates.length;
+  const pS=a.periodDates[0]?a.periodDates[0].split('-'):['','',''];
+  const pE=a.periodDates[a.periodDates.length-1]?a.periodDates[a.periodDates.length-1].split('-'):['','',''];
+  const periodStr=`${pS[0]}/${pS[1]}/${pS[2]} 〜 ${parseInt(pE[1])||''}/${parseInt(pE[2])||''}（${numDays}日間）`;
   const updLocal=toLocal(raw.updated_at_utc,offset);
   const updStr=`${updLocal.getUTCFullYear()}/${updLocal.getUTCMonth()+1}/${updLocal.getUTCDate()} ${timeStr(updLocal)} ${tzLabel}`;
-  // Achievement labels
   const achLabelEn=a.isToday?"Today's Achievement":"Day's Achievement";
   const achLabelJp=a.isToday?'':'過去日表示中';
   const hourlyTitle=a.isToday?'今日の時間帯別アクティビティ':`${selShortDisplay} の時間帯別アクティビティ`;
   const commitLogTitle=a.isToday?'直近コミットログ':`${selShortDisplay} のコミットログ`;
+
+  // === Streak表示 (真の値) ===
+  const streakBadge=a.currentStreak>0
+    ? `<span class="badge badge-streak">🔥 ${a.currentStreak}日連続 <span class="sub">/ 最高${a.longestStreak}日 / 通算${a.totalContributions.toLocaleString()}</span></span>`
+    : `<span class="badge badge-streak">最高記録 ${a.longestStreak}日 / 通算${a.totalContributions.toLocaleString()}</span>`;
+
+  // === 月別カードHTML ===
+  let monthlyCardsHtml='';
+  let monthlyLabels=[],monthlyCommits=[],monthlyPersonDays=[],monthlySalary=[],monthlyNet=[],monthlyMergedPrs=[];
+  for(const m of monthly){
+    monthlyLabels.push(`${m.year}/${m.month}`);
+    monthlyCommits.push(m.commits);
+    monthlyPersonDays.push(Number(m.personDays.toFixed(1)));
+    monthlySalary.push(Math.round(m.salary));
+    monthlyNet.push(m.net);
+    monthlyMergedPrs.push(m.mergedPrs);
+
+    const hasData=m.commits>0||m.prs>0||m.issues>0;
+    const noDataCls=hasData?'':' no-data-month';
+    const currentCls=m.isCurrent?' current':'';
+    const monthTag=m.isCurrent?'<span class="month-tag">CURRENT</span>':'';
+    monthlyCardsHtml+=`
+      <div class="monthly-card${currentCls}${noDataCls}">
+        <div class="month-label"><span>${m.year}年${m.month}月</span>${monthTag}</div>
+        <div class="month-salary">${fmtYen(m.salary)}</div>
+        <div class="month-persondays">≈ ${m.personDays.toFixed(1)} 人日相当</div>
+        <div class="month-grid">
+          <div class="item"><span class="k">Commits</span><span class="v purple">${m.commits.toLocaleString()}</span></div>
+          <div class="item"><span class="k">PRs</span><span class="v green">${m.prs.toLocaleString()}</span></div>
+          <div class="item"><span class="k">Merged</span><span class="v cyan">${m.mergedPrs.toLocaleString()}</span></div>
+          <div class="item"><span class="k">Issues</span><span class="v coral">${m.issues.toLocaleString()}</span></div>
+          <div class="item"><span class="k">Net Lines</span><span class="v ${m.net>=0?'green':'coral'}">${m.net>=0?'+':''}${fmtLoc(m.net)}</span></div>
+          <div class="item"><span class="k">Repos</span><span class="v blue">${m.activeRepos}</span></div>
+        </div>
+      </div>`;
+  }
 
   document.getElementById('dashboard').innerHTML=`
   <div class="hero">
@@ -330,25 +569,25 @@ function render(raw){
         </div>
       </div>
       <div class="hero-badge">
-        <span class="badge badge-streak">🔥 ${a.streak}日連続</span>
+        ${streakBadge}
         <span class="badge badge-auto">⚡ 5min自動更新</span>
         <span class="badge" style="background:rgba(139,124,247,0.12);color:var(--purple)">${updStr} 時点</span>
       </div>
     </div>
     <div class="hero-grid">
-      <div class="hero-stat"><div class="num">${a.tCommits}</div><div class="label">Commits</div><div class="equiv">≈ エンジニア${(a.tCommits/5).toFixed(1)}人日</div></div>
-      <div class="hero-stat"><div class="num">${a.tPrs}</div><div class="label">Pull Requests</div><div class="pct">${a.isToday&&a.openPrs>0?'Open '+a.openPrs+'件中 今日+'+a.tPrs+'件':'≈ エンジニア'+(a.tPrs/1).toFixed(1)+'人日'}</div></div>
-      <div class="hero-stat"><div class="num">${tNet>=0?'+':''}${tNet.toLocaleString()}</div><div class="label">Net Lines</div><div class="pct">${a.totalLoc>0?fmtLoc(a.totalLoc)+'行中 '+pctStr(tNet,a.totalLoc):'≈ エンジニア'+(Math.max(tNet,0)/100).toFixed(1)+'人日'}${!a.isToday?'<span class="snapshot-note">※総行数は現時点</span>':''}</div></div>
-      <div class="hero-stat"><div class="num">${a.activeRepos}</div><div class="label">Active Repos</div><div class="pct">${a.isToday&&a.openIssues>0?'Open Issue '+a.openIssues+'件':'&nbsp;'}</div></div>
+      <div class="hero-stat"><div class="num">${a.tCommits}</div><div class="label">Commits</div><div class="equiv">≈ ${(a.tCommits/5).toFixed(1)} 人日 / ${fmtYen((a.tCommits/5)*SALARY_PER_DAY)}</div></div>
+      <div class="hero-stat"><div class="num">${a.tPrs}</div><div class="label">Pull Requests</div><div class="pct">${a.isToday&&a.openPrs>0?'Open '+a.openPrs+'件中 今日+'+a.tPrs+'件':'マージ '+a.tMergedPrs+'件'}</div></div>
+      <div class="hero-stat"><div class="num">${tNet>=0?'+':''}${tNet.toLocaleString()}</div><div class="label">Net Lines</div><div class="pct">${a.totalLoc>0?fmtLoc(a.totalLoc)+'行中 '+pctStr(tNet,a.totalLoc):'&nbsp;'}${!a.isToday?'<span class="snapshot-note">※総行数は現時点</span>':''}</div></div>
+      <div class="hero-stat"><div class="num">${a.activeRepos}</div><div class="label">Active Repos<span style="font-size:9px;opacity:.7"> (期間内)</span></div><div class="pct">${a.isToday&&a.openIssues>0?'Open Issue '+a.openIssues+'件':'&nbsp;'}</div></div>
     </div>
     <div class="hero-sub-stats">
       <span>📝 合計コード: ${fmtLoc(a.totalLoc)} 行（${Object.keys(a.repoLoc).length}リポジトリ）${!a.isToday?'<span class="snapshot-note">※現時点</span>':''}</span>
-      <span>≈ エンジニア${(a.tCommits/5).toFixed(1)}人日分</span>
+      <span>≈ エンジニア${(a.tCommits/5).toFixed(1)}人日分（${fmtYen((a.tCommits/5)*SALARY_PER_DAY)}相当）</span>
     </div>
     <div class="repo-delta-grid" id="repoDeltaGrid">
       ${buildRepoDeltaHTML(a)}
     </div>
-    <div class="bench-note">※ 人日換算基準: コミット5回/日, PR 1件/日, コード純増100行/日 (<a href="https://blog.ndepend.com/mythical-man-month-10-lines-per-developer-day/" target="_blank" style="color:var(--purple)">NDepend研究</a>等に基づく一般的エンジニアの1日平均)</div>
+    <div class="bench-note">※ 人日換算基準: コミット5回/日 (<a href="https://blog.ndepend.com/mythical-man-month-10-lines-per-developer-day/" target="_blank" style="color:var(--purple)">NDepend研究</a>等)　給与換算: ITエンジニア平均年収 550万円 ÷ 365日 ≒ 15,068円/日</div>
   </div>
 
   <div class="grid-today">
@@ -374,7 +613,7 @@ function render(raw){
     <div class="summary-item"><div class="val c-purple">${totalC.toLocaleString()}</div><div class="lbl">Total Commits</div></div>
     <div class="summary-item"><div class="val c-green">${totalPr.toLocaleString()}</div><div class="lbl">Total PRs</div></div>
     <div class="summary-item"><div class="val c-coral">${totalIs.toLocaleString()}</div><div class="lbl">Total Issues</div></div>
-    <div class="summary-item"><div class="val c-blue">+${totalNet.toLocaleString()}</div><div class="lbl">Net Lines</div></div>
+    <div class="summary-item"><div class="val c-blue">${totalNet>=0?'+':''}${totalNet.toLocaleString()}</div><div class="lbl">Net Lines</div></div>
   </div>
 
   <div class="grid-2">
@@ -399,6 +638,21 @@ function render(raw){
       <div class="chart-wrap h220"><canvas id="c4"></canvas></div>
     </div>
   </div>
+
+  <div class="monthly-section">
+    <div class="section-header">
+      <h3>📅 月別アクティビティ（直近12ヶ月）</h3>
+      <span class="desc">給与換算: ITエンジニア平均年収 550万円基準</span>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <h2><span class="icon">📊</span> 月別推移</h2>
+      <div class="legend"><span><span class="dot" style="background:#8b7cf7"></span>コミット数</span><span><span class="dot" style="background:#fbbf24"></span>給与換算（円）</span><span><span class="line-dot" style="background:#34d399"></span>マージPR</span></div>
+      <div class="chart-wrap h280"><canvas id="monthlyTrend"></canvas></div>
+    </div>
+    <div class="monthly-cards">${monthlyCardsHtml}</div>
+    <div class="salary-note">※ 給与換算は、コミット数×5回=1人日の換算に、<a href="https://www.geekly.co.jp/column/cat-position/engineer-income-ranking/" target="_blank">ITエンジニア平均年収 550万円</a>（経産省・doda・厚労省の中間値）÷365日 ≒ 15,068円/日 を乗じた参考値。実際の労働時間や品質を反映するものではありません。</div>
+  </div>
+
   <div class="footer"><span id="autoRefresh" style="font-size:10px;color:var(--green);margin-right:12px">🔄 自動更新中</span>最終更新: ${updStr}　|　Powered by <a href="https://github.com/DaisukeHori/github-activity-dashboard">GitHub Actions</a></div>
   `;
 
@@ -439,18 +693,44 @@ function render(raw){
     }
   }));
 
-  // Daily activity
-  CHARTS.push(new Chart(document.getElementById('c1'),{type:'bar',data:{labels,datasets:[{label:'コミット',data:cmArr,backgroundColor:'#8b7cf7',borderRadius:4,barPercentage:.6,categoryPercentage:.8},{label:'PR',data:prArr,backgroundColor:'#34d399',borderRadius:4,barPercentage:.6,categoryPercentage:.8},{label:'Issue',data:isArr,backgroundColor:'#ef4444',borderRadius:4,barPercentage:.6,categoryPercentage:.8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,...TT}},scales:{x:{grid:{display:false},ticks:{color:TC,font:{size:10},autoSkip:false}},y:{grid:{color:G},ticks:{color:TC,font:{size:10}},beginAtZero:true}}}}));
+  // Daily activity (期間プリセット対応)
+  CHARTS.push(new Chart(document.getElementById('c1'),{type:'bar',data:{labels,datasets:[{label:'コミット',data:cmArr,backgroundColor:'#8b7cf7',borderRadius:4,barPercentage:.6,categoryPercentage:.8},{label:'PR',data:prArr,backgroundColor:'#34d399',borderRadius:4,barPercentage:.6,categoryPercentage:.8},{label:'Issue',data:isArr,backgroundColor:'#ef4444',borderRadius:4,barPercentage:.6,categoryPercentage:.8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,...TT}},scales:{x:{grid:{display:false},ticks:xTicksConfig},y:{grid:{color:G},ticks:{color:TC,font:{size:10}},beginAtZero:true}}}}));
 
-  // Daily code
-  CHARTS.push(new Chart(document.getElementById('c2'),{type:'bar',data:{labels,datasets:[{label:'追加',data:adArr,backgroundColor:'rgba(34,197,94,0.6)',borderRadius:4,barPercentage:.5,categoryPercentage:.85,yAxisID:'y'},{label:'削除',data:dlArr.map(d=>-d),backgroundColor:'rgba(239,68,68,0.6)',borderRadius:4,barPercentage:.5,categoryPercentage:.85,yAxisID:'y'},{label:'純増',data:ntArr,type:'line',borderColor:'#8b7cf7',borderWidth:2,pointRadius:2.5,pointBackgroundColor:'#8b7cf7',fill:false,yAxisID:'y2',tension:.35}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,...TT,callbacks:{label:c=>{const v=c.raw;return c.dataset.label+': '+(v<0?'-':'+')+Math.abs(v).toLocaleString()+' 行'}}}},scales:{x:{grid:{display:false},ticks:{color:TC,font:{size:10},autoSkip:false},stacked:true},y:{grid:{color:G},ticks:{color:TC,font:{size:10},callback:v=>(v<0?'-':'')+(Math.abs(v)/1000).toFixed(0)+'k'},stacked:true,position:'left'},y2:{grid:{display:false},ticks:{color:'#8b7cf7',font:{size:10},callback:v=>(v/1000).toFixed(0)+'k'},position:'right',beginAtZero:true}}}}));
+  // Daily code (期間プリセット対応)
+  CHARTS.push(new Chart(document.getElementById('c2'),{type:'bar',data:{labels,datasets:[{label:'追加',data:adArr,backgroundColor:'rgba(34,197,94,0.6)',borderRadius:4,barPercentage:.5,categoryPercentage:.85,yAxisID:'y'},{label:'削除',data:dlArr.map(d=>-d),backgroundColor:'rgba(239,68,68,0.6)',borderRadius:4,barPercentage:.5,categoryPercentage:.85,yAxisID:'y'},{label:'純増',data:ntArr,type:'line',borderColor:'#8b7cf7',borderWidth:2,pointRadius:periodLabelMode==='day'?2.5:1,pointBackgroundColor:'#8b7cf7',fill:false,yAxisID:'y2',tension:.35}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,...TT,callbacks:{label:c=>{const v=c.raw;return c.dataset.label+': '+(v<0?'-':'+')+Math.abs(v).toLocaleString()+' 行'}}}},scales:{x:{grid:{display:false},ticks:xTicksConfig,stacked:true},y:{grid:{color:G},ticks:{color:TC,font:{size:10},callback:v=>(v<0?'-':'')+(Math.abs(v)/1000).toFixed(0)+'k'},stacked:true,position:'left'},y2:{grid:{display:false},ticks:{color:'#8b7cf7',font:{size:10},callback:v=>(v/1000).toFixed(0)+'k'},position:'right',beginAtZero:true}}}}));
 
   // Repo chart
   const rn=sortedRepos.map(r=>r[0]),rc=sortedRepos.map(r=>r[1]),rColors=rn.map((_,i)=>PALETTE[i%PALETTE.length]);
   CHARTS.push(new Chart(document.getElementById('c3'),{type:'bar',data:{labels:rn,datasets:[{data:rc,backgroundColor:rColors,borderRadius:4,barPercentage:.55}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>c.raw.toLocaleString()+' commits'}}},scales:{x:{grid:{color:G},ticks:{color:TC,font:{size:10}},beginAtZero:true},y:{grid:{display:false},ticks:{color:'#a1a1aa',font:{size:10}}}}}}));
 
   // Cumulative
-  CHARTS.push(new Chart(document.getElementById('c4'),{type:'line',data:{labels,datasets:[{label:'累積純増',data:cumArr,borderColor:'#3b82f6',borderWidth:2.5,pointRadius:2.5,pointBackgroundColor:'#3b82f6',fill:true,backgroundColor:function(ctx){const c=ctx.chart.ctx;const gr=c.createLinearGradient(0,0,0,ctx.chart.height);gr.addColorStop(0,'rgba(59,130,246,0.15)');gr.addColorStop(1,'rgba(59,130,246,0)');return gr},tension:.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>'+'+c.raw.toLocaleString()+' 行'}}},scales:{x:{grid:{display:false},ticks:{color:TC,font:{size:10},autoSkip:false}},y:{grid:{color:G},ticks:{color:TC,font:{size:10},callback:v=>(v/1000).toFixed(0)+'k'},beginAtZero:true}}}}));
+  CHARTS.push(new Chart(document.getElementById('c4'),{type:'line',data:{labels,datasets:[{label:'累積純増',data:cumArr,borderColor:'#3b82f6',borderWidth:2.5,pointRadius:periodLabelMode==='day'?2.5:1,pointBackgroundColor:'#3b82f6',fill:true,backgroundColor:function(ctx){const c=ctx.chart.ctx;const gr=c.createLinearGradient(0,0,0,ctx.chart.height);gr.addColorStop(0,'rgba(59,130,246,0.15)');gr.addColorStop(1,'rgba(59,130,246,0)');return gr},tension:.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>(c.raw>=0?'+':'')+c.raw.toLocaleString()+' 行'}}},scales:{x:{grid:{display:false},ticks:xTicksConfig},y:{grid:{color:G},ticks:{color:TC,font:{size:10},callback:v=>(v/1000).toFixed(0)+'k'}}}}}));
+
+  // === 月別推移チャート ===
+  CHARTS.push(new Chart(document.getElementById('monthlyTrend'),{
+    type:'bar',
+    data:{
+      labels:monthlyLabels,
+      datasets:[
+        {label:'コミット数',data:monthlyCommits,backgroundColor:'rgba(139,124,247,0.7)',borderRadius:4,barPercentage:.6,categoryPercentage:.85,yAxisID:'y'},
+        {label:'マージPR',type:'line',data:monthlyMergedPrs,borderColor:'#34d399',borderWidth:2,pointRadius:3,pointBackgroundColor:'#34d399',fill:false,yAxisID:'y',tension:.3},
+        {label:'給与換算',type:'line',data:monthlySalary,borderColor:'#fbbf24',borderWidth:2,pointRadius:3,pointBackgroundColor:'#fbbf24',fill:false,yAxisID:'y2',tension:.3},
+      ],
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,...TT,
+        callbacks:{label:c=>{
+          if(c.dataset.label==='給与換算')return c.dataset.label+': '+fmtYen(c.raw);
+          return c.dataset.label+': '+c.raw.toLocaleString();
+        }}
+      }},
+      scales:{
+        x:{grid:{display:false},ticks:{color:TC,font:{size:10}}},
+        y:{grid:{color:G},ticks:{color:TC,font:{size:10}},beginAtZero:true,position:'left'},
+        y2:{grid:{display:false},ticks:{color:'#fbbf24',font:{size:10},callback:v=>fmtYen(v)},beginAtZero:true,position:'right'},
+      }
+    }
+  }));
 }
 
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
@@ -459,27 +739,17 @@ function esc(s){const d=document.createElement('div');d.textContent=s;return d.i
 function openDatePicker(){
   const inp=document.getElementById('dateInput');
   if(!inp)return;
-  try{
-    inp.showPicker();
-  }catch(e){
-    // Fallback for browsers without showPicker support
-    inp.focus();
-    inp.click();
-  }
+  try{inp.showPicker()}catch(e){inp.focus();inp.click()}
 }
 function onDateChange(ev){
   const v=ev.target.value;
   if(!v)return;
-  // If selected is today, treat as null (live mode)
   const now=toLocal(new Date().toISOString(),CUR_TZ);
   const todayStr=dateStr(now);
   SELECTED_DATE=(v===todayStr)?null:v;
   if(RAW)render(RAW);
 }
-function resetToToday(){
-  SELECTED_DATE=null;
-  if(RAW)render(RAW);
-}
+function resetToToday(){SELECTED_DATE=null;if(RAW)render(RAW)}
 
 let LAST_UPDATE='';
 
@@ -491,6 +761,7 @@ function fetchData(){
         LAST_UPDATE=data.updated_at_utc;
         RAW=data;
         highlightTZ();
+        highlightPeriod();
         render(data);
         console.log('[Dashboard] Data updated:',data.updated_at_utc);
       }
@@ -503,21 +774,16 @@ function fetchData(){
 
 // Initial load
 fetchData();
-
-// Auto-refresh: poll every 60s, detect new data
 setInterval(fetchData, 60*1000);
 
-// Also sync to cron: at :03 and :08 past each 5-min mark, do an extra fetch
-// (cron runs at :00,:05,:10,...; data lands ~1-3 min later)
 function scheduleNextSync(){
   const now=new Date();
   const min=now.getMinutes();
   const sec=now.getSeconds();
-  // Next :03 or :08 past a 5-min boundary
   const targets=[3,8,13,18,23,28,33,38,43,48,53,58];
   let next=targets.find(t=>t>min)||(targets[0]+60);
   let delay=((next-min)*60-sec)*1000;
-  if(delay<5000) delay+=300000; // avoid firing immediately
+  if(delay<5000) delay+=300000;
   setTimeout(()=>{fetchData();scheduleNextSync()},delay);
 }
 scheduleNextSync();
