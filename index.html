@@ -53,6 +53,11 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .repo-delta .rloc{color:var(--text3);font-family:'JetBrains Mono',monospace;font-size:10px}
 .repo-delta .rpct{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500}
 .rpct.up{color:var(--green)}.rpct.down{color:var(--coral)}.rpct.zero{color:var(--text3)}
+.repo-delta-toggle{grid-column:1/-1;background:rgba(255,255,255,0.02);border:1px dashed var(--border);border-radius:8px;padding:7px 14px;color:var(--text3);font-size:11px;cursor:pointer;text-align:center;transition:all .15s;user-select:none;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px}
+.repo-delta-toggle:hover{background:rgba(139,124,247,0.08);border-color:var(--purple);color:var(--purple)}
+.repo-delta-toggle .arrow{font-size:10px;transition:transform .2s}
+.repo-delta-toggle.expanded .arrow{transform:rotate(180deg)}
+.repo-delta-hidden{display:contents}
 .bench-note{font-size:10px;color:var(--text3);margin-top:16px;text-align:right;opacity:.7}
 .bench-note a{text-decoration:none}
 /* === 日付ピッカー === */
@@ -331,15 +336,53 @@ function buildRepoDeltaHTML(a){
       }
     }
   }
-  const sorted=Object.entries(a.repoLoc).sort((x,y)=>y[1]-x[1]);
-  return sorted.map(([repo,loc])=>{
+  // 全 repo に delta% を付与
+  const allRepos=Object.entries(a.repoLoc).map(([repo,loc])=>{
     const t=dayByRepo[repo]||{add:0,del:0};
     const net=t.add-t.del;
     const pct=loc>0?(net/loc*100):0;
-    const cls=net>0?'up':net<0?'down':'zero';
-    const sign=net>0?'+':'';
-    return '<div class="repo-delta"><span class="rname">'+esc(repo)+'</span><span class="rstat"><span class="rloc">'+fmtLoc(loc)+'</span><span class="rpct '+cls+'">'+sign+pct.toFixed(2)+'%</span></span></div>';
-  }).join('');
+    return {repo,loc,net,pct};
+  });
+  // 動きあり (|pct| 降順) と動きなし (LOC 降順) に分離
+  const active=allRepos.filter(r=>r.net!==0).sort((x,y)=>Math.abs(y.pct)-Math.abs(x.pct));
+  const inactive=allRepos.filter(r=>r.net===0).sort((x,y)=>y.loc-x.loc);
+  // 表示: 動きありの上位8件 / 折りたたみ: 残り全部
+  const visible=active.slice(0,8);
+  const hidden=[...active.slice(8),...inactive];
+
+  function renderItem(r){
+    const cls=r.net>0?'up':r.net<0?'down':'zero';
+    const sign=r.net>0?'+':'';
+    return '<div class="repo-delta"><span class="rname">'+esc(r.repo)+'</span><span class="rstat"><span class="rloc">'+fmtLoc(r.loc)+'</span><span class="rpct '+cls+'">'+sign+r.pct.toFixed(2)+'%</span></span></div>';
+  }
+  const visibleHtml=visible.map(renderItem).join('');
+  if(hidden.length===0)return visibleHtml;
+  const hiddenHtml=hidden.map(renderItem).join('');
+  const activeHiddenCount=Math.max(0,active.length-8);
+  const inactiveCount=inactive.length;
+  const tagParts=[];
+  if(activeHiddenCount>0)tagParts.push('活動あり '+activeHiddenCount+'件');
+  if(inactiveCount>0)tagParts.push('活動なし '+inactiveCount+'件');
+  const summary=tagParts.length?'（'+tagParts.join('、')+'）':'';
+  return visibleHtml
+    +'<div class="repo-delta-toggle" onclick="toggleRepoHidden(this)"><span class="arrow">▾</span><span class="toggle-label">残り '+hidden.length+' 件を表示</span><span style="color:var(--text3);opacity:.85">'+summary+'</span></div>'
+    +'<div class="repo-delta-hidden" style="display:none">'+hiddenHtml+'</div>';
+}
+
+function toggleRepoHidden(el){
+  const hidden=el.nextElementSibling;
+  if(!hidden||!hidden.classList.contains('repo-delta-hidden'))return;
+  const isOpen=el.classList.contains('expanded');
+  if(isOpen){
+    hidden.style.display='none';
+    el.classList.remove('expanded');
+    el.querySelector('.toggle-label').textContent=el.dataset.collapsedLabel||el.querySelector('.toggle-label').textContent;
+  }else{
+    if(!el.dataset.collapsedLabel)el.dataset.collapsedLabel=el.querySelector('.toggle-label').textContent;
+    hidden.style.display='contents';
+    el.classList.add('expanded');
+    el.querySelector('.toggle-label').textContent='折りたたむ';
+  }
 }
 
 // === 集計関数 ===
