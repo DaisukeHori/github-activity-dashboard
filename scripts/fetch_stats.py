@@ -80,18 +80,58 @@ def save_db(path, db):
         print(f"  {name}: ({size_kb}KB)")
 
 
-def determine_since(db, key, initial_days=LOOKBACK_DAYS_INITIAL,
+def determine_since(db, key, contribution_years=None,
+                    initial_days=LOOKBACK_DAYS_INITIAL,
                     overlap_days=LOOKBACK_DAYS_OVERLAP):
-    """DB から差分取得開始日を決定。空なら初回遡り。"""
+    """DB から差分取得開始日を決定。
+
+    - DB が空: ターゲット最古日まで遡る
+    - DB の最古日がターゲットより新しい: ターゲットまで遡る (バックフィル)
+    - DB の最古日がターゲット以前: 通常の差分 (最新-overlap)
+
+    ターゲット最古日:
+    - contribution_years 指定時: 最古年の 1/1
+    - それ以外: now - initial_days
+    """
     now = datetime.now(timezone.utc)
+    if contribution_years and len(contribution_years) > 0:
+        earliest_year = min(contribution_years)
+        target_oldest = datetime(earliest_year, 1, 1, tzinfo=timezone.utc)
+    else:
+        target_oldest = now - timedelta(days=initial_days)
+
     if not db:
-        return now - timedelta(days=initial_days)
+        return target_oldest
     valid_values = [c[key] for c in db.values() if key in c and c[key]]
     if not valid_values:
-        return now - timedelta(days=initial_days)
+        return target_oldest
+
+    oldest_str = min(valid_values)
     latest_str = max(valid_values)
+    oldest_dt = datetime.fromisoformat(oldest_str.replace("Z", "+00:00"))
     latest_dt = datetime.fromisoformat(latest_str.replace("Z", "+00:00"))
+
+    # DB の最古日がターゲットより新しい → 遡って取得 (バックフィル)
+    if oldest_dt > target_oldest:
+        return target_oldest
+
+    # 通常: 最新-オーバーラップで差分取得
     return latest_dt - timedelta(days=overlap_days)
+
+
+def get_contribution_years(streak_db):
+    """contribution_years を streak_db から取得、なければ GraphQL で軽量取得"""
+    if streak_db and streak_db.get("contribution_years"):
+        return streak_db["contribution_years"]
+    q = """query($login: String!) {
+        user(login: $login) {
+            contributionsCollection { contributionYears }
+        }
+    }"""
+    r = graphql(q, {"login": USERNAME})
+    if "data" in r and r["data"].get("user"):
+        return r["data"]["user"]["contributionsCollection"]["contributionYears"]
+    return None
 
 
 # ============================================================
@@ -397,12 +437,23 @@ def main():
     db_commits = load_db(COMMITS_DB_PATH)
     db_prs = load_db(PRS_DB_PATH)
     db_issues = load_db(ISSUES_DB_PATH)
+    streak_db_existing = load_db(STREAK_DB_PATH)
     print(f"  commits: {len(db_commits)}, prs: {len(db_prs)}, issues: {len(db_issues)}")
 
-    # ---- Determine since ----
-    commits_since = determine_since(db_commits, "utc")
-    prs_since = determine_since(db_prs, "created_at")
-    issues_since = determine_since(db_issues, "created_at")
+    # ---- Get contribution years (for backfill target) ----
+    print("\n[1.5] Getting contribution years (for backfill target)...")
+    contribution_years = get_contribution_years(streak_db_existing)
+    if contribution_years:
+        print(f"  Contribution years: {sorted(contribution_years)} "
+              f"(target oldest: {min(contribution_years)}-01-01)")
+    else:
+        print(f"  No contribution years available, falling back to "
+              f"{LOOKBACK_DAYS_INITIAL}d lookback")
+
+    # ---- Determine since (with backfill if DB doesn't cover full range) ----
+    commits_since = determine_since(db_commits, "utc", contribution_years)
+    prs_since = determine_since(db_prs, "created_at", contribution_years)
+    issues_since = determine_since(db_issues, "created_at", contribution_years)
     print(f"\n  Commits since: {commits_since.strftime('%Y-%m-%d')}")
     print(f"  PRs since: {prs_since.strftime('%Y-%m-%d')}")
     print(f"  Issues since: {issues_since.strftime('%Y-%m-%d')}")
