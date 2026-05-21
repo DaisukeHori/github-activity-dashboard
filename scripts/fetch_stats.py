@@ -308,6 +308,46 @@ def fetch_open_counts():
 
 
 # ============================================================
+# 日本の祝日 (内閣府CSV)
+# ============================================================
+
+def fetch_holidays(since_year=2019):
+    """内閣府の祝日CSVを取得し、since_year 以降の祝日リストを返す。
+
+    https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv
+    形式: 国民の祝日・休日月日,国民の祝日・休日名称 (Shift_JIS)
+    """
+    url = "https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv"
+    try:
+        r = requests.get(url, timeout=20)
+        r.encoding = "shift_jis"
+        holidays = []
+        lines = r.text.strip().split("\n")
+        for line in lines[1:]:  # ヘッダースキップ
+            parts = line.split(",")
+            if not parts:
+                continue
+            date_str = parts[0].strip()
+            for fmt in ("%Y/%m/%d", "%Y-%m-%d"):
+                try:
+                    dt = datetime.strptime(date_str, fmt)
+                    iso = dt.strftime("%Y-%m-%d")
+                    if dt.year >= since_year:
+                        holidays.append(iso)
+                    break
+                except ValueError:
+                    continue
+        holidays = sorted(set(holidays))
+        print(f"  Holidays fetched: {len(holidays)} "
+              f"({holidays[0] if holidays else '-'} 〜 "
+              f"{holidays[-1] if holidays else '-'})")
+        return holidays
+    except Exception as e:
+        print(f"  Holiday fetch failed: {e}")
+        return []
+
+
+# ============================================================
 # Streak (全期間 GraphQL contributionsCollection)
 # ============================================================
 
@@ -492,6 +532,10 @@ def main():
     open_prs, open_issues = fetch_open_counts()
     print(f"  Open PRs: {open_prs}, Open Issues: {open_issues}")
 
+    # ---- Japanese holidays (内閣府) ----
+    print("\n[7.5] Fetching Japanese holidays...")
+    holidays = fetch_holidays(since_year=2019)
+
     # ---- Streak (GraphQL all-time) ----
     print("\n[8] Fetching full streak (GraphQL contributionsCollection)...")
     streak = fetch_full_streak()
@@ -660,6 +704,7 @@ def main():
             "account_created_at": streak.get("account_created_at"),
         },
         "day_contributions": day_counts_recent,
+        "holidays": holidays,
     }
 
     with open(DATA_PATH, "w") as f:

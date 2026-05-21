@@ -88,6 +88,17 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .prod-item.salary .val{color:var(--amber)}
 .prod-item .lbl{font-size:11px;color:var(--text3);margin-top:2px}
 .prod-item .sub{font-size:9px;color:var(--text3);opacity:.8;margin-top:1px}
+/* === 人日密度 (期間別、3分母) === */
+.period-density{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+.density-item{background:var(--surface);border-radius:var(--radius-sm);padding:1rem 1.25rem;border:1px solid var(--border);position:relative;overflow:hidden}
+.density-item.calendar{border-left:3px solid var(--blue)}
+.density-item.working{border-left:3px solid var(--green)}
+.density-item.active{border-left:3px solid var(--coral)}
+.density-head{font-size:12px;color:var(--text2);margin-bottom:8px;display:flex;align-items:center;gap:6px;font-weight:500}
+.density-avg{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;color:var(--text);line-height:1.1}
+.density-avg .unit{font-size:12px;color:var(--text3);font-weight:400;margin-left:3px}
+.density-sub{font-size:10px;color:var(--text3);margin-top:6px;opacity:.85}
+.density-salary{font-size:11px;color:var(--amber);margin-top:4px;opacity:.9}
 /* === 日付ピッカー === */
 .hero-date-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .date-picker-btn{background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--text);font-size:15px;font-weight:500;padding:6px 12px;border-radius:10px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all .15s;position:relative}
@@ -158,7 +169,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .salary-note a{color:var(--cyan);text-decoration:none}
 .no-data-month{opacity:.4}
 .no-data-month .month-salary{background:linear-gradient(135deg,var(--text3),var(--text3));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-@media(max-width:768px){.container{padding:1rem}.hero-grid{grid-template-columns:repeat(2,1fr);gap:12px}.hero-stat .num{font-size:36px}.grid-2,.grid-today,.summary-bar{grid-template-columns:1fr}.commit-item{grid-template-columns:70px 80px 1fr 40px}.monthly-cards{grid-template-columns:1fr}.period-custom-range input{width:95px}.integrated-eval{grid-template-columns:1fr}.productivity-bar{grid-template-columns:1fr 1fr}}
+@media(max-width:768px){.container{padding:1rem}.hero-grid{grid-template-columns:repeat(2,1fr);gap:12px}.hero-stat .num{font-size:36px}.grid-2,.grid-today,.summary-bar{grid-template-columns:1fr}.commit-item{grid-template-columns:70px 80px 1fr 40px}.monthly-cards{grid-template-columns:1fr}.period-custom-range input{width:95px}.integrated-eval{grid-template-columns:1fr}.productivity-bar{grid-template-columns:1fr 1fr}.period-density{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -555,6 +566,20 @@ function aggregate(raw,offset,selectedDayInput){
   const openIssues=raw.open_issues||0;
   const repoLoc=raw.repo_loc||{};
 
+  // === 期間内の日数集計 (人日密度用) ===
+  const holidaySet=new Set(raw.holidays||[]);
+  let workingDays=0, activeDays=0;
+  for(const ds of periodDates){
+    const parts=ds.split('-').map(Number);
+    const d=new Date(Date.UTC(parts[0],parts[1]-1,parts[2]));
+    const dow=d.getUTCDay();  // 0=日, 6=土
+    const isWeekend=(dow===0||dow===6);
+    const isHoliday=holidaySet.has(ds);
+    if(!isWeekend&&!isHoliday)workingDays++;
+    if((daily.commits[ds]||0)>0)activeDays++;
+  }
+  const calendarDays=periodDates.length;
+
   // Date picker range (archive がある場合は最古年まで遡れるように)
   let dataMin=raw.since_utc?raw.since_utc.slice(0,10):today;
   if(raw.archives&&raw.archives.length>0){
@@ -571,6 +596,7 @@ function aggregate(raw,offset,selectedDayInput){
     tCommits,tPrs,tMergedPrs,tIssues,tAdd,tDel,
     activeRepos:activeReposInPeriod,top20:displayCommits,
     peakDay,peakCount,now,totalLoc,openPrs,openIssues,repoLoc,
+    calendarDays,workingDays,activeDays,
     dataMin,dataMax,
   };
 }
@@ -836,6 +862,27 @@ function render(raw){
     <div class="prod-item"><div class="val c-blue">${fmtPd(pdLoc(totalNet))}</div><div class="lbl">コード行数人日</div><div class="sub">${totalNet>=0?'+':''}${fmtLoc(totalNet)} ÷ 200</div></div>
     <div class="prod-item integrated"><div class="val">${fmtPd(pdIntegrated(totalC,totalNet))}</div><div class="lbl">統合人日（加重50:50）</div><div class="sub">(コミット+コード) ÷ 2</div></div>
     <div class="prod-item salary"><div class="val">${fmtYen(pdIntegrated(totalC,totalNet)*SALARY_PER_DAY)}</div><div class="lbl">給与換算</div><div class="sub">統合人日 × 15,068円</div></div>
+  </div>
+  <div style="font-size:12px;color:var(--text3);margin-bottom:8px">📐 統合人日 ${fmtPd(pdIntegrated(totalC,totalNet))}人日 を 3つの分母で平均（1日あたりの生産性密度）</div>
+  <div class="period-density">
+    <div class="density-item calendar">
+      <div class="density-head">📅 暦日ベース</div>
+      <div class="density-avg">${(pdIntegrated(totalC,totalNet)/Math.max(a.calendarDays,1)).toFixed(1)}<span class="unit">人日/日</span></div>
+      <div class="density-sub">${fmtPd(pdIntegrated(totalC,totalNet))}人日 ÷ ${a.calendarDays}暦日</div>
+      <div class="density-salary">≈ ${fmtYen(pdIntegrated(totalC,totalNet)/Math.max(a.calendarDays,1)*SALARY_PER_DAY)}/日</div>
+    </div>
+    <div class="density-item working">
+      <div class="density-head">💼 稼働日ベース（土日祝除く）</div>
+      <div class="density-avg">${a.workingDays>0?(pdIntegrated(totalC,totalNet)/a.workingDays).toFixed(1):'—'}<span class="unit">人日/営業日</span></div>
+      <div class="density-sub">${fmtPd(pdIntegrated(totalC,totalNet))}人日 ÷ ${a.workingDays}営業日</div>
+      <div class="density-salary">≈ ${a.workingDays>0?fmtYen(pdIntegrated(totalC,totalNet)/a.workingDays*SALARY_PER_DAY):'—'}/営業日</div>
+    </div>
+    <div class="density-item active">
+      <div class="density-head">🔥 実稼働日ベース（コミット日）</div>
+      <div class="density-avg">${a.activeDays>0?(pdIntegrated(totalC,totalNet)/a.activeDays).toFixed(1):'—'}<span class="unit">人日/実働日</span></div>
+      <div class="density-sub">${fmtPd(pdIntegrated(totalC,totalNet))}人日 ÷ ${a.activeDays}実働日</div>
+      <div class="density-salary">≈ ${a.activeDays>0?fmtYen(pdIntegrated(totalC,totalNet)/a.activeDays*SALARY_PER_DAY):'—'}/実働日</div>
+    </div>
   </div>
 
   <div class="grid-2">
