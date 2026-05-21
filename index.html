@@ -70,6 +70,24 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .repo-delta-hidden{display:contents}
 .bench-note{font-size:10px;color:var(--text3);margin-top:16px;text-align:right;opacity:.7}
 .bench-note a{text-decoration:none}
+/* === 統合評価バー (Hero内) === */
+.integrated-eval{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+.eval-item{background:rgba(255,255,255,0.03);border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;gap:3px}
+.eval-item.integrated{background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(239,68,68,0.06));border:1px solid rgba(245,158,11,0.2)}
+.eval-item .eval-label{font-size:10px;color:var(--text3);letter-spacing:.5px}
+.eval-item .eval-val{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:var(--text)}
+.eval-item.integrated .eval-val{background:linear-gradient(135deg,var(--amber),var(--coral));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.eval-item .eval-sub{font-size:10px;color:var(--text3);opacity:.85}
+.eval-item .eval-formula{font-size:9px;color:var(--text3);opacity:.7;margin-top:1px}
+/* === 生産性サマリー (期間別) === */
+.productivity-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
+.prod-item{background:var(--surface);border-radius:var(--radius-sm);padding:1rem;border:1px solid var(--border);text-align:center}
+.prod-item.integrated{background:linear-gradient(135deg,rgba(245,158,11,0.08),transparent);border-color:rgba(245,158,11,0.25)}
+.prod-item .val{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:600;color:var(--text)}
+.prod-item.integrated .val{background:linear-gradient(135deg,var(--amber),var(--coral));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.prod-item.salary .val{color:var(--amber)}
+.prod-item .lbl{font-size:11px;color:var(--text3);margin-top:2px}
+.prod-item .sub{font-size:9px;color:var(--text3);opacity:.8;margin-top:1px}
 /* === 日付ピッカー === */
 .hero-date-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .date-picker-btn{background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--text);font-size:15px;font-weight:500;padding:6px 12px;border-radius:10px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all .15s;position:relative}
@@ -140,7 +158,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .salary-note a{color:var(--cyan);text-decoration:none}
 .no-data-month{opacity:.4}
 .no-data-month .month-salary{background:linear-gradient(135deg,var(--text3),var(--text3));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-@media(max-width:768px){.container{padding:1rem}.hero-grid{grid-template-columns:repeat(2,1fr);gap:12px}.hero-stat .num{font-size:36px}.grid-2,.grid-today,.summary-bar{grid-template-columns:1fr}.commit-item{grid-template-columns:70px 80px 1fr 40px}.monthly-cards{grid-template-columns:1fr}.period-custom-range input{width:95px}}
+@media(max-width:768px){.container{padding:1rem}.hero-grid{grid-template-columns:repeat(2,1fr);gap:12px}.hero-stat .num{font-size:36px}.grid-2,.grid-today,.summary-bar{grid-template-columns:1fr}.commit-item{grid-template-columns:70px 80px 1fr 40px}.monthly-cards{grid-template-columns:1fr}.period-custom-range input{width:95px}.integrated-eval{grid-template-columns:1fr}.productivity-bar{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -172,8 +190,18 @@ const PALETTE=["#8b7cf7","#34d399","#fbbf24","#f97066","#60a5fa","#c084fc","#fb9
 const SALARY_ANNUAL = 5500000;
 const SALARY_PER_DAY = SALARY_ANNUAL / 365;  // 約15,068 円/日
 
+// === 人日換算ベース ===
+const COMMITS_PER_PERSON_DAY = 5;    // コミット5回/日 = 1人日 (NDepend研究等)
+const LOC_PER_PERSON_DAY = 200;      // コード200行/日 = 1人日 (AIアシスト開発を考慮)
+const W_COMMIT = 0.5;                // 統合評価の加重: コミット観点
+const W_LOC = 0.5;                   // 統合評価の加重: コード行数観点
+function pdCommit(commits){return commits/COMMITS_PER_PERSON_DAY}
+function pdLoc(net){return Math.max(net,0)/LOC_PER_PERSON_DAY}
+function pdIntegrated(commits,net){return pdCommit(commits)*W_COMMIT+pdLoc(net)*W_LOC}
+
 function fmtLoc(n){if(n>=1000000)return (n/1000000).toFixed(1)+'M';if(n>=1000)return (n/1000).toFixed(1)+'K';return String(n)}
 function fmtYen(n){if(n>=100000000)return '¥'+(n/100000000).toFixed(2)+'億';if(n>=10000000)return '¥'+(n/10000000).toFixed(2)+'千万';if(n>=10000)return '¥'+(n/10000).toFixed(1)+'万';return '¥'+Math.round(n).toLocaleString()}
+function fmtPd(n){return n>=1000?(n/1000).toFixed(1)+'k':n.toFixed(1)}
 function pctStr(delta,total){if(total<=0)return '—';const p=(delta/total*100);return (p>=0?'+':'')+p.toFixed(2)+'%'}
 
 // === 状態 ===
@@ -590,8 +618,10 @@ function aggregateMonthly(raw,offset){
     const ym=key(d);
     const stats=monthly[ym]||{commits:0,prs:0,mergedPrs:0,issues:0,closedIssues:0,add:0,del:0,repos:new Set()};
     const net=stats.add-stats.del;
-    // 人日換算: コミット数/5を主指標
-    const personDays=stats.commits/5;
+    // 人日換算: コミット観点 + コード行数観点の統合 (加重50:50)
+    const pdC=pdCommit(stats.commits);
+    const pdL=pdLoc(net);
+    const personDays=pdC*W_COMMIT+pdL*W_LOC;
     const salary=personDays*SALARY_PER_DAY;
     months.push({
       ym,year:d.getUTCFullYear(),month:d.getUTCMonth()+1,
@@ -599,7 +629,7 @@ function aggregateMonthly(raw,offset){
       issues:stats.issues,closedIssues:stats.closedIssues,
       add:stats.add,del:stats.del,net,
       activeRepos:stats.repos.size,
-      personDays,salary,
+      pdCommit:pdC,pdLoc:pdL,personDays,salary,
       isCurrent:i===0,
     });
   }
@@ -697,7 +727,7 @@ function render(raw){
       <div class="monthly-card${currentCls}${noDataCls}">
         <div class="month-label"><span>${m.year}年${m.month}月</span>${monthTag}</div>
         <div class="month-salary">${fmtYen(m.salary)}</div>
-        <div class="month-persondays">≈ ${m.personDays.toFixed(1)} 人日相当</div>
+        <div class="month-persondays">≈ ${m.personDays.toFixed(1)} 人日（統合）<span style="opacity:.7"> ・ コミット ${m.pdCommit.toFixed(1)} / コード ${m.pdLoc.toFixed(1)}</span></div>
         <div class="month-grid">
           <div class="item"><span class="k">Commits</span><span class="v purple">${m.commits.toLocaleString()}</span></div>
           <div class="item"><span class="k">PRs</span><span class="v green">${m.prs.toLocaleString()}</span></div>
@@ -736,19 +766,23 @@ function render(raw){
       </div>
     </div>
     <div class="hero-grid">
-      <div class="hero-stat"><div class="num">${a.tCommits}</div><div class="label">Commits</div><div class="equiv">≈ ${(a.tCommits/5).toFixed(1)} 人日 / ${fmtYen((a.tCommits/5)*SALARY_PER_DAY)}</div></div>
+      <div class="hero-stat"><div class="num">${a.tCommits}</div><div class="label">Commits</div><div class="equiv">≈ ${pdCommit(a.tCommits).toFixed(1)} 人日 / ${fmtYen(pdCommit(a.tCommits)*SALARY_PER_DAY)}</div></div>
       <div class="hero-stat"><div class="num">${a.tPrs}</div><div class="label">Pull Requests</div><div class="pct">${a.isToday&&a.openPrs>0?'Open '+a.openPrs+'件中 今日+'+a.tPrs+'件':'マージ '+a.tMergedPrs+'件'}</div></div>
-      <div class="hero-stat"><div class="num">${tNet>=0?'+':''}${tNet.toLocaleString()}</div><div class="label">Net Lines</div><div class="pct">${a.totalLoc>0?fmtLoc(a.totalLoc)+'行中 '+pctStr(tNet,a.totalLoc):'&nbsp;'}${!a.isToday?'<span class="snapshot-note">※総行数は現時点</span>':''}</div></div>
+      <div class="hero-stat"><div class="num">${tNet>=0?'+':''}${tNet.toLocaleString()}</div><div class="label">Net Lines</div><div class="equiv">≈ ${pdLoc(tNet).toFixed(1)} 人日 / ${fmtYen(pdLoc(tNet)*SALARY_PER_DAY)}</div><div class="pct">${a.totalLoc>0?fmtLoc(a.totalLoc)+'行中 '+pctStr(tNet,a.totalLoc):'&nbsp;'}${!a.isToday?'<span class="snapshot-note">※総行数は現時点</span>':''}</div></div>
       <div class="hero-stat"><div class="num">${a.activeRepos}</div><div class="label">Active Repos<span style="font-size:9px;opacity:.7"> (期間内)</span></div><div class="pct">${a.isToday&&a.openIssues>0?'Open Issue '+a.openIssues+'件':'&nbsp;'}</div></div>
+    </div>
+    <div class="integrated-eval">
+      <div class="eval-item"><span class="eval-label">📊 コミット観点</span><span class="eval-val">${pdCommit(a.tCommits).toFixed(1)} 人日</span><span class="eval-sub">${a.tCommits} commits ÷ 5</span></div>
+      <div class="eval-item"><span class="eval-label">💻 コード行数観点</span><span class="eval-val">${pdLoc(tNet).toFixed(1)} 人日</span><span class="eval-sub">${tNet>=0?'+':''}${fmtLoc(tNet)} 行 ÷ 200</span></div>
+      <div class="eval-item integrated"><span class="eval-label">🧮 統合評価（加重 50:50）</span><span class="eval-val">${pdIntegrated(a.tCommits,tNet).toFixed(1)} 人日 / ${fmtYen(pdIntegrated(a.tCommits,tNet)*SALARY_PER_DAY)}</span><span class="eval-formula">= (コミット人日 + コード行数人日) ÷ 2</span></div>
     </div>
     <div class="hero-sub-stats">
       <span>📝 合計コード: ${fmtLoc(a.totalLoc)} 行（${Object.keys(a.repoLoc).length}リポジトリ）${!a.isToday?'<span class="snapshot-note">※現時点</span>':''}</span>
-      <span>≈ エンジニア${(a.tCommits/5).toFixed(1)}人日分（${fmtYen((a.tCommits/5)*SALARY_PER_DAY)}相当）</span>
     </div>
     <div class="repo-delta-grid" id="repoDeltaGrid">
       ${buildRepoDeltaHTML(a)}
     </div>
-    <div class="bench-note">※ 人日換算基準: コミット5回/日 (<a href="https://blog.ndepend.com/mythical-man-month-10-lines-per-developer-day/" target="_blank" style="color:var(--purple)">NDepend研究</a>等)　給与換算: ITエンジニア平均年収 550万円 ÷ 365日 ≒ 15,068円/日</div>
+    <div class="bench-note">※ 人日換算: コミット5回/日 (<a href="https://blog.ndepend.com/mythical-man-month-10-lines-per-developer-day/" target="_blank" style="color:var(--purple)">NDepend研究</a>等) ＋ コード200行/日。統合評価 = (コミット人日 + コード行数人日) ÷ 2。給与換算: ITエンジニア平均年収 550万円 ÷ 365日 ≒ 15,068円/日</div>
   </div>
 
   <div class="grid-today">
@@ -796,6 +830,13 @@ function render(raw){
     <div class="summary-item"><div class="val c-coral">${totalIs.toLocaleString()}</div><div class="lbl">Total Issues</div></div>
     <div class="summary-item"><div class="val c-blue">${totalNet>=0?'+':''}${totalNet.toLocaleString()}</div><div class="lbl">Net Lines</div></div>
   </div>
+  <div style="font-size:12px;color:var(--text3);margin-bottom:8px">🧮 期間内の生産性（人日換算）</div>
+  <div class="productivity-bar">
+    <div class="prod-item"><div class="val c-purple">${fmtPd(pdCommit(totalC))}</div><div class="lbl">コミット人日</div><div class="sub">${totalC.toLocaleString()} ÷ 5</div></div>
+    <div class="prod-item"><div class="val c-blue">${fmtPd(pdLoc(totalNet))}</div><div class="lbl">コード行数人日</div><div class="sub">${totalNet>=0?'+':''}${fmtLoc(totalNet)} ÷ 200</div></div>
+    <div class="prod-item integrated"><div class="val">${fmtPd(pdIntegrated(totalC,totalNet))}</div><div class="lbl">統合人日（加重50:50）</div><div class="sub">(コミット+コード) ÷ 2</div></div>
+    <div class="prod-item salary"><div class="val">${fmtYen(pdIntegrated(totalC,totalNet)*SALARY_PER_DAY)}</div><div class="lbl">給与換算</div><div class="sub">統合人日 × 15,068円</div></div>
+  </div>
 
   <div class="grid-2">
     <div class="card">
@@ -833,7 +874,7 @@ function render(raw){
       <div class="chart-wrap h280"><canvas id="monthlyTrend"></canvas></div>
     </div>
     <div class="monthly-cards">${monthlyCardsHtml}</div>
-    <div class="salary-note">※ 給与換算は、コミット数×5回=1人日の換算に、<a href="https://www.geekly.co.jp/column/cat-position/engineer-income-ranking/" target="_blank">ITエンジニア平均年収 550万円</a>（経産省・doda・厚労省の中間値）÷365日 ≒ 15,068円/日 を乗じた参考値。実際の労働時間や品質を反映するものではありません。</div>
+    <div class="salary-note">※ 統合人日 = (コミット人日[commits÷5] + コード行数人日[net÷200]) ÷ 2 の加重平均。給与換算は統合人日 × <a href="https://www.geekly.co.jp/column/cat-position/engineer-income-ranking/" target="_blank">ITエンジニア平均年収 550万円</a>（経産省・doda・厚労省の中間値）÷365日 ≒ 15,068円/日 の参考値。実際の労働時間や品質を反映するものではありません。</div>
   </div>
   </div><!-- /tab-content monthly -->
 
