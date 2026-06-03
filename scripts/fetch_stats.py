@@ -30,6 +30,20 @@ GRAPHQL_HEADERS = {
     "Content-Type": "application/json",
 }
 USERNAME = "DaisukeHori"
+
+# コミット author フィルタ一覧 (GitHub commits API の `author` パラメータは
+# GitHub username または email を受け付ける)。
+# PR/Issues は GitHub Search API の `author:{USERNAME}` (ログイン名) で取得するため
+# メールアドレス名義の影響を受けず、ここには含めない。
+AUTHOR_FILTERS = [
+    "DaisukeHori",                                             # GitHub login (noreply + primary email をカバー)
+    "hori@hori.tech",                                          # 個人ドメイン (obc-to-freee, homegohan-app 等)
+    "daisuke@revol.co.jp",                                     # 会社 (paintlog, revol-hair-ai 等)
+    "hori@revol.co.jp",                                        # 会社別名義 (iroca-color-simulator 等)
+    "it+v0agent@vercel.com",                                   # Vercel v0 自動生成
+    "37795263-nvidiahomeftpne@users.noreply.replit.com",       # Replit
+]
+
 LOOKBACK_DAYS_INITIAL = 365   # DB が空の場合の初回遡り日数
 LOOKBACK_DAYS_OVERLAP = 7     # 差分取得時のオーバーラップ日数
 OUTPUT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -145,7 +159,8 @@ def fetch_repos(since_iso=None):
     while True:
         r = api_get("https://api.github.com/user/repos",
                     {"per_page": 100, "page": page,
-                     "sort": "pushed", "direction": "desc"})
+                     "sort": "pushed", "direction": "desc",
+                     "affiliation": "owner,organization_member,collaborator"})
         data = r.json()
         if not data or not isinstance(data, list):
             break
@@ -170,30 +185,34 @@ def fetch_commits_incremental(repos, since_iso, db):
     for repo_obj in repos:
         repo = repo_obj["full_name"]
         short_name = repo.split("/")[-1]
-        page = 1
-        while True:
-            r = api_get(f"https://api.github.com/repos/{repo}/commits",
-                        {"since": since_iso, "author": USERNAME,
-                         "per_page": 100, "page": page})
-            commits = r.json()
-            if not isinstance(commits, list) or not commits:
-                break
-            for c in commits:
-                sha = c["sha"]
-                if sha in db:
-                    skipped += 1
-                    continue
-                utc = c["commit"]["author"]["date"]
-                msg = c["commit"]["message"].split("\n")[0][:80]
-                db[sha] = {
-                    "utc": utc, "repo": short_name, "msg": msg,
-                    "add": 0, "del": 0,
-                }
-                new_shas.append((sha, repo))
-                new_count += 1
-            page += 1
-            if len(commits) < 100:
-                break
+        # AUTHOR_FILTERS を順に回し、SHA で dedup しながら全名義のコミットを取得。
+        # email フィルタが GitHub 側でヒットしない場合はエラーにせず黙ってスキップ。
+        for author_filter in AUTHOR_FILTERS:
+            page = 1
+            while True:
+                r = api_get(f"https://api.github.com/repos/{repo}/commits",
+                            {"since": since_iso, "author": author_filter,
+                             "per_page": 100, "page": page})
+                commits = r.json()
+                # レスポンスが list でない/空ならこのフィルタをスキップ
+                if not isinstance(commits, list) or not commits:
+                    break
+                for c in commits:
+                    sha = c["sha"]
+                    if sha in db:
+                        skipped += 1
+                        continue
+                    utc = c["commit"]["author"]["date"]
+                    msg = c["commit"]["message"].split("\n")[0][:80]
+                    db[sha] = {
+                        "utc": utc, "repo": short_name, "msg": msg,
+                        "add": 0, "del": 0,
+                    }
+                    new_shas.append((sha, repo))
+                    new_count += 1
+                page += 1
+                if len(commits) < 100:
+                    break
 
     print(f"  New commits: {new_count}, Already in DB: {skipped}")
 
